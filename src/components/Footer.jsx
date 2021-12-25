@@ -93,13 +93,13 @@ const Footer = () => {
             <Right>
                 <Title>Contact</Title>
                 <ContactItem>
-                    <Room style={{marginRight: "10px"}}/> 622 Dixie Path , South Tobinchester 98336
+                    <Room style={{marginRight: "10px"}}/> Trường Đại học Công nghệ Thông tin ĐHQG TP.HCM
                 </ContactItem>
                 <ContactItem>
-                    <Phone style={{marginRight: "10px"}}/> +1 234 56 78
+                    <Phone style={{marginRight: "10px"}}/> 0985413340
                 </ContactItem>
                 <ContactItem>
-                    <MailOutline style={{marginRight: "10px"}}/> contact@yamee.com
+                    <MailOutline style={{marginRight: "10px"}}/> tienhv58@gmail.com
                 </ContactItem>
             </Right>
             <Seperator/>
