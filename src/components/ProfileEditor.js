@@ -28,7 +28,7 @@ const ProfileEditor = () => {
                   labelCol={{span: 8}}
                   wrapperCol={{span: 8}}
                   onFinish={onFinish}
-                  initialValues={{name: profile && profile.name || ""}}
+                  initialValues={{name: (profile && profile.name) || ""}}
                   layout={"horizontal"}
                   autoComplete="off"
             >

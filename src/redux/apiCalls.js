@@ -1,7 +1,7 @@
 import {getProfileFailed, getProfileSuccess, loginFailure, loginStart, loginSuccess} from "./userRedux";
 import {privateRequest, publicRequest} from "../helpers/axiosInstance";
 import {addError, addSuccess} from "./alertRedux";
-import {add, remove} from "./cartRedux";
+import {addNew, editQuantity, remove} from "./cartRedux";
 
 export const login = (user) => async (dispatch) => {
     dispatch(loginStart());
@@ -188,6 +188,17 @@ export const getNewArrivals = () => async (dispatch) => {
     }
 }
 
+export const filterProduct = (categories) => async (dispatch) => {
+    try {
+        const params = {};
+        if (categories) params.categories = categories;
+
+        return await publicRequest.get("/products/filters", {params});
+    } catch (error) {
+        handleApiError(dispatch, error, "Failed to filter products");
+    }
+}
+
 export const getProductDetail = (id) => async (dispatch) => {
     try {
         return await publicRequest.get("/products/" + id);
@@ -222,6 +233,43 @@ export const addProduct = (product) => async (dispatch) => {
     }
 }
 
+export const updateProduct = (id, product) => async (dispatch) => {
+    try {
+        const formData = new FormData();
+        if (product.thumbnail) {
+            formData.append('thumbnail', product.thumbnail.fileList[0].originFileObj);
+        }
+        if (product['galleries']) {
+            if (Array.isArray(product['galleries'])) {
+                product.updateGalleries = false;
+            } else if (typeof product['galleries'] === 'object') {
+                product.updateGalleries = true;
+                product.deletedGalleries = product.removedGalleries || [];
+                if (product['galleries'].fileList.length) {
+                    const newImg = product['galleries'].fileList.filter(i => !i.existed);
+                    newImg.forEach(img => {
+                        formData.append('galleries', img.originFileObj);
+                    });
+                }
+            }
+        }
+        delete product.thumbnail;
+        delete product.galleries;
+
+        formData.append("product", JSON.stringify(product));
+        const config = {
+            headers: {
+                'content-type': 'multipart/form-data'
+            }
+        }
+        const response = await privateRequest.patch("/admin/products/" + id, formData, config);
+        handleApiSuccess(dispatch, "Successfully update product");
+        return response;
+    } catch (error) {
+        handleApiError(dispatch, error, "Failed to update product!");
+    }
+}
+
 export const addProductVariant = (variant) => async (dispatch) => {
     try {
         const formData = new FormData();
@@ -243,6 +291,39 @@ export const addProductVariant = (variant) => async (dispatch) => {
         return response;
     } catch (error) {
         handleApiError(dispatch, error, "Failed to add product variant!");
+    }
+}
+
+export const updateProductVariant = (id, variant) => async (dispatch) => {
+    try {
+        const formData = new FormData();
+        if (variant['galleries']) {
+            if (Array.isArray(variant['galleries'])) {
+                variant.updateGalleries = false;
+            } else if (typeof variant['galleries'] === 'object') {
+                variant.updateGalleries = true;
+                variant.deletedGalleries = variant.deletedGalleries || [];
+                if (variant['galleries'].fileList.length) {
+                    const newImg = variant['galleries'].fileList.filter(i => !i.existed);
+                    newImg.forEach(img => {
+                        formData.append('galleries', img.originFileObj);
+                    });
+                }
+            }
+        }
+        delete variant.galleries;
+
+        formData.append("variant", JSON.stringify(variant));
+        const config = {
+            headers: {
+                'content-type': 'multipart/form-data'
+            }
+        }
+        const response = await privateRequest.patch("/admin/products/variants/" + id, formData, config);
+        handleApiSuccess(dispatch, "Successfully update product variant");
+        return response;
+    } catch (error) {
+        handleApiError(dispatch, error, "Failed to update product variant!");
     }
 }
 
@@ -277,6 +358,24 @@ export const publishProduct = (id) => async (dispatch) => {
     }
 }
 
+export const getAllOrder = () => async (dispatch) => {
+    try {
+        return await privateRequest.get("/admin/orders");
+    } catch (error) {
+        handleApiError(dispatch, error, "Failed to fetch orders!");
+    }
+}
+
+export const changeOrderStatus = (id, status) => async (dispatch) => {
+    try {
+        const response = await privateRequest.patch("/admin/orders/" + id + `/${status}`);
+        handleApiSuccess(dispatch, "Order has been change to " + status);
+        return response;
+    } catch (error) {
+        handleApiError(dispatch, error, "Failed to change status!");
+    }
+}
+
 /**
  * Carts
  * @param item
@@ -284,13 +383,18 @@ export const publishProduct = (id) => async (dispatch) => {
  */
 
 export const addItemToCart = (item) => async (dispatch) => {
-    dispatch(add(item));
+    dispatch(addNew(item));
     dispatch(addSuccess({message: "Product added to cart!", timestamp: new Date().getTime()}));
 }
 
 export const removeCartItem = (item) => async (dispatch) => {
     dispatch(remove(item));
     dispatch(addSuccess({message: "Product removed from cart!", timestamp: new Date().getTime()}));
+}
+
+export const updateCartItem = (quantity, item) => async (dispatch) => {
+    dispatch(editQuantity({old: item, quantity}));
+    dispatch(addSuccess({message: "Cart has been updated!", timestamp: new Date().getTime()}));
 }
 
 /**
@@ -315,6 +419,39 @@ export const removeWishlistItem = (id) => async (dispatch) => {
         return response;
     } catch (error) {
         handleApiError(dispatch, error, "Failed to remove item from wishlist!");
+    }
+}
+
+/**
+ * ORDERS
+ * @param order
+ * @returns {(function(*): Promise<AxiosResponse<any>|undefined>)|*}
+ */
+export const placeOrder = (order) => async (dispatch) => {
+    try {
+        const response = await privateRequest.post("/orders/place", order);
+        handleApiSuccess(dispatch, "Order has been placed successfully!");
+        return response;
+    } catch (error) {
+        handleApiError(dispatch, error, "Failed to place your order!");
+    }
+}
+
+export const getMyOrders = () => async (dispatch) => {
+    try {
+        return await privateRequest.get("/orders");
+    } catch (error) {
+        handleApiError(dispatch, error, "Failed to get your order!");
+    }
+}
+
+export const cancelOrder = (id) => async (dispatch) => {
+    try {
+        const response = await privateRequest.patch("/orders/" + id);
+        handleApiSuccess(dispatch, "Order has been cancelled successfully!");
+        return response;
+    } catch (error) {
+        handleApiError(dispatch, error, "Failed to cancel your order!");
     }
 }
 

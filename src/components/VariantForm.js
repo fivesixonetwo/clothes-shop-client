@@ -4,18 +4,12 @@ import {useDispatch} from "react-redux";
 import {addAttribute, addAttributeValue, getAllAttributes} from "../redux/apiCalls";
 import {MinusCircleOutlined, PlusOutlined} from '@ant-design/icons';
 import {addError} from "../redux/alertRedux";
+import {BASE_URL} from "../helpers/axiosInstance";
 
-const productModel = {
-    id: null,
-    parentId: null,
-    name: "",
-    imageUrl: "",
-    enabled: false,
-};
 
 const {Option} = Select;
 
-const VariantForm = ({visible, onCreate, onCancel, initialValue = productModel}) => {
+const VariantForm = ({visible, onCreate, onCancel, initialValue}) => {
     const [form] = Form.useForm();
     const dispatch = useDispatch();
 
@@ -23,10 +17,13 @@ const VariantForm = ({visible, onCreate, onCancel, initialValue = productModel})
     const [attributeName, setAttributeName] = useState("");
     const [attributeValue, setAttributeValue] = useState("");
     const [selectedAttributeName, setSelectedAttributeName] = useState(0);
+    const [deletedGalleries, setDeletedGalleries] = useState([]);
 
     useEffect(() => {
-        refreshAttributes();
-    }, []);
+        if (visible) {
+            refreshAttributes();
+        }
+    }, [visible]);
 
     const refreshAttributes = () => {
         dispatch(getAllAttributes()).then((r) => {
@@ -35,6 +32,7 @@ const VariantForm = ({visible, onCreate, onCancel, initialValue = productModel})
     }
 
     const resetForm = () => {
+        setDeletedGalleries([]);
         form.resetFields();
         setAttributeName("");
         setAttributeValue("");
@@ -93,12 +91,37 @@ const VariantForm = ({visible, onCreate, onCancel, initialValue = productModel})
         return lt1M ? false : Upload.LIST_IGNORE;
     }
 
+    const getInitialImages = () => {
+        if (!initialValue || !initialValue.images) return [];
+        return initialValue.images.map(i => {
+            return {
+                existed: true,
+                id: i.id,
+                uid: i.id,
+                url: BASE_URL + "products/images/" + i.url
+            };
+        });
+    }
+
+    const onRemoveGallery = (e) => {
+        setDeletedGalleries(deletedGalleries.concat(e));
+    }
+
+    const getInitialValue = (field, defaultValue) => {
+        if (selectedAttributeName) return defaultValue;
+
+        if (field && field.key < initialValue["optionsIds"].length && initialValue && initialValue['optionsIds']) {
+            return initialValue['optionsIds'][field.key].name;
+        }
+        return defaultValue;
+    }
+
     return (
         <Modal
             destroyOnClose={false}
             visible={visible}
-            title={initialValue.id ? "Update Variant" : "Add Variant"}
-            okText={initialValue.id ? "Update" : "Add"}
+            title={initialValue ? "Update Variant" : "Add Variant"}
+            okText={initialValue ? "Update" : "Add"}
             cancelText="Cancel"
             onCancel={onSelfCancel}
             width={850}
@@ -107,6 +130,7 @@ const VariantForm = ({visible, onCreate, onCancel, initialValue = productModel})
                     .validateFields()
                     .then(values => {
                         form.resetFields();
+                        values.deletedGalleries = deletedGalleries;
                         onCreate(values);
                     });
             }}
@@ -118,23 +142,18 @@ const VariantForm = ({visible, onCreate, onCancel, initialValue = productModel})
                 layout="horizontal"
                 name="form_in_modal"
             >
-                <Form.Item
-                    name="name"
-                    shouldUpdate={true}
-                    initialValue={initialValue.name}
-                    label="Name"
-                    rules={[{required: false}]}
-                >
-                    <Input placeholder={"Variant name"}/>
+                <Form.Item name={"id"} noStyle initialValue={initialValue ? initialValue.id : -1}>
+                    <Input type="hidden"/>
                 </Form.Item>
                 <Form.Item label={"Prices"}>
                     <Space>
                         <Form.Item
                             label="Cost"
                             name={"cost"}
+                            initialValue={initialValue ? initialValue.cost : 0}
                             required
                             rules={[{required: true, message: 'Please input cost!'}]}>
-                            <InputNumber formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                            <InputNumber min={0} formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                          parser={value => value.replace(/\$\s?|(,*)/g, '')}
                             />
                         </Form.Item>
@@ -142,14 +161,16 @@ const VariantForm = ({visible, onCreate, onCancel, initialValue = productModel})
                             label="Price"
                             name={"price"}
                             required
+                            initialValue={initialValue ? initialValue['price'] : 0}
                             rules={[{required: true, message: 'Please input price!'}]}>
-                            <InputNumber formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                            <InputNumber min={0} formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                          parser={value => value.replace(/\$\s?|(,*)/g, '')}
                             />
                         </Form.Item>
                         <Form.Item
                             label="Stock Quantity"
                             name={"stock"}
+                            initialValue={initialValue ? initialValue['stock'] : 1}
                             required
                             rules={[{required: true, message: 'Please input stock!'}]}>
                             <InputNumber min={1}/>
@@ -157,7 +178,8 @@ const VariantForm = ({visible, onCreate, onCancel, initialValue = productModel})
                     </Space>
                 </Form.Item>
                 <Form.Item label={"Options"}>
-                    <Form.List name="options">
+                    <Form.List name="options"
+                               initialValue={initialValue ? initialValue['optionsIds'] : []}>
                         {(fields, {add, remove}) => (
                             <>
                                 {fields.map(field => (
@@ -229,7 +251,7 @@ const VariantForm = ({visible, onCreate, onCancel, initialValue = productModel})
                                                     </div>
                                                 </div>
                                             )}>
-                                                {([].concat(attribute.attributeValues[selectedAttributeName] || [])).map(c =>
+                                                {([].concat(attribute.attributeValues[initialValue && initialValue.id ? getInitialValue(field, selectedAttributeName) : selectedAttributeName] || [])).map(c =>
                                                     <Option key={c.id}
                                                             value={c.id}>{c.value}</Option>)}
                                             </Select>
@@ -248,11 +270,16 @@ const VariantForm = ({visible, onCreate, onCancel, initialValue = productModel})
                         )}
                     </Form.List>
                 </Form.Item>
-                <Form.Item shouldUpdate={true} label="Galleries" name={"galleries"}>
+                <Form.Item shouldUpdate={true}
+                           initialValue={getInitialImages()}
+                           label="Galleries"
+                           name={"galleries"}>
                     <Upload
                         beforeUpload={onBeforeUpload}
                         accept={".png,.jpeg,.jpg"}
                         onPreview={onPreview}
+                        defaultFileList={getInitialImages()}
+                        onRemove={onRemoveGallery}
                         maxCount={6}
                         listType="picture-card"
                     >

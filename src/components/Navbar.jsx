@@ -1,6 +1,6 @@
 import {Badge} from "@material-ui/core";
 import {FavoriteBorder, LocalMall} from "@material-ui/icons";
-import React from "react";
+import React, {useEffect, useState} from "react";
 import styled from "styled-components";
 import {mobile} from "../responsive";
 import {Link, useHistory} from "react-router-dom";
@@ -9,6 +9,9 @@ import {Avatar, Dropdown, Menu, Tooltip} from 'antd';
 import {DashboardOutlined, LogoutOutlined, UserOutlined} from '@ant-design/icons';
 import {logOut} from "../redux/userRedux";
 import {useSnackbar} from "notistack";
+import {resetCart} from "../redux/cartRedux";
+import {resetNotification} from "../redux/alertRedux";
+import {getCategories} from "../redux/apiCalls";
 
 const Container = styled.div`
   height: 60px;
@@ -30,6 +33,16 @@ const Left = styled.div`
   flex: 1;
   display: flex;
   align-items: center;
+
+  & > div {
+    margin-left: 50px;
+    display: flex;
+    flex-direction: row;
+  }
+
+  & * + * {
+    margin-left: 25px;
+  }
 `;
 styled.span`
   font-size: 14px;
@@ -78,11 +91,23 @@ const Navbar = () => {
     const {profile} = useSelector((state) => state.user);
     const {items} = useSelector((state) => state.cart);
 
+    const [categories, setCategories] = useState([]);
+
+    useEffect(() => {
+        dispatch(getCategories()).then((r) => {
+            if (r) {
+                setCategories(r.data);
+            }
+        });
+    }, []);
+
     const dispatch = useDispatch();
     const history = useHistory();
     const {enqueueSnackbar} = useSnackbar();
 
     const onClickLogOut = () => {
+        dispatch(resetNotification());
+        dispatch(resetCart());
         dispatch(logOut());
         enqueueSnackbar("You has been logged out.", {variant: "success"});
         history.replace("/");
@@ -114,6 +139,15 @@ const Navbar = () => {
                 <Link to="/">
                     <Logo>YAMEE</Logo>
                 </Link>
+                <div>
+                    {
+                        [].concat(categories).slice(0, 4).map((cate) =>
+                            <Link key={cate.id} to={"/filter-products?category=" + cate.id}>
+                                <h3>{cate.name}</h3>
+                            </Link>
+                        )
+                    }
+                </div>
             </Left>
             <Center>
             </Center>
@@ -127,14 +161,18 @@ const Navbar = () => {
                 <StyledLink to="/wishlist">
                     <Tooltip title="Your wishlist" overlayInnerStyle={{fontSize: 12}}>
                         <MenuItem key={"4"} hidden={!currentUser} title={"Wishlist"}>
-                            <FavoriteBorder/>
+                            <Badge showZero={true}
+                                   badgeContent={(profile && profile['wishlist'] && profile['wishlist'].length) || 0}
+                                   color="primary">
+                                <FavoriteBorder/>
+                            </Badge>
                         </MenuItem>
                     </Tooltip>
                 </StyledLink>
                 <StyledLink to="/cart">
                     <Tooltip title="Cart" overlayInnerStyle={{fontSize: 12}}>
                         <MenuItem key={"5"} title={"Cart"}>
-                            <Badge showZero={false} badgeContent={items && items.length || 0} color="error">
+                            <Badge showZero={true} badgeContent={(items && items.length) || 0} color="error">
                                 <LocalMall/>
                             </Badge>
                         </MenuItem>
@@ -146,7 +184,7 @@ const Navbar = () => {
                                 marginRight: 5,
                                 fontSize: 14,
                                 fontWeight: "500"
-                            }}>Welcome, {profile && profile.name || "Yamee"}</span>
+                            }}>Welcome, {(profile && profile.name) || "Yamee"}</span>
                     <Dropdown trigger={['click']} overlay={menu} placement="bottomLeft">
                         <Avatar size={30} style={{backgroundColor: '#87d068'}} icon={<UserOutlined/>}/>
                     </Dropdown>

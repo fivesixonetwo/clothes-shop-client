@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import {Badge, Button, Image, List, Popconfirm, Space, Table, Tooltip} from "antd";
+import {Badge, Button, Image, List, Popconfirm, Space, Table, Tooltip, Typography} from "antd";
 import {PlusOutlined} from "@ant-design/icons";
 import {useEffect, useState} from "react";
 import ProductForm from "../components/ProductForm";
@@ -10,16 +10,20 @@ import {
     deleteProduct,
     deleteProductVariant,
     getProducts,
-    publishProduct
+    publishProduct,
+    updateProduct,
+    updateProductVariant
 } from "../redux/apiCalls";
 import {BASE_URL} from "../helpers/axiosInstance";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PublishIcon from '@mui/icons-material/Publish';
-import {getReadableSpecifications, groupBy} from "../helpers/utils";
+import {getReadableSpecifications} from "../helpers/utils";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import VariantForm from "../components/VariantForm";
 import CurrencyFormat from "react-currency-format";
+
+const {Text} = Typography;
 
 
 const Container = styled.div`
@@ -41,7 +45,8 @@ const ProductManagement = () => {
     const [products, setProducts] = useState([]);
     const [productFormVisible, setProductFormVisible] = useState(false);
     const [productVariantFormVisible, setProductVariantFormVisible] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState({});
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [selectedVariant, setSelectedVariant] = useState(null);
 
     useEffect(() => {
         refreshProducts();
@@ -63,6 +68,16 @@ const ProductManagement = () => {
         dispatch(publishProduct(product.id)).then(() => {
             refreshProducts();
         });
+    }
+
+    const onClickAddNewProduct = () => {
+        setSelectedProduct(null);
+        setProductFormVisible(true);
+    }
+
+    const onClickEditProduct = (product) => {
+        setSelectedProduct(product);
+        setProductFormVisible(true);
     }
 
     const generalProductColumns = [
@@ -138,7 +153,7 @@ const ProductManagement = () => {
                 <Space size="small">
                     <Tooltip title="Edit" overlayInnerStyle={{fontSize: 12}}>
                         <Button disabled={record.deleted} type="text" shape={"default"}
-                                icon={<EditIcon fontSize={"small"}/>}/>
+                                icon={<EditIcon onClick={() => onClickEditProduct(record)} fontSize={"small"}/>}/>
                     </Tooltip>
                     <Popconfirm disabled={record.deleted}
                                 title="Are you sure to delete this product?"
@@ -165,20 +180,39 @@ const ProductManagement = () => {
     ]
 
     const onSubmitProductForm = (values) => {
-        setProductFormVisible(false);
-        dispatch(addProduct(values)).then(() => {
-            refreshProducts();
-        });
+        if (values.id && selectedProduct) {
+            setProductFormVisible(false);
+            dispatch(updateProduct(values.id, values)).then(() => {
+                refreshProducts();
+            });
+        } else {
+            setProductFormVisible(false);
+            dispatch(addProduct(values)).then(() => {
+                refreshProducts();
+            });
+        }
     }
 
     const onCreateVariant = (values) => {
         setProductVariantFormVisible(false);
-        values.productId = selectedProduct.id;
-        dispatch(addProductVariant(values)).then(() => refreshProducts());
+        if (values.id && selectedVariant) {
+            dispatch(updateProductVariant(values.id, values)).then(() => {
+                refreshProducts();
+            });
+        } else {
+            values.productId = selectedProduct.id;
+            dispatch(addProductVariant(values)).then(() => refreshProducts());
+        }
     }
 
     const onPrepareAddVariant = (record) => {
         setSelectedProduct(record);
+        setSelectedVariant(null);
+        setProductVariantFormVisible(true);
+    }
+
+    const onPrepareEditVariant = (record) => {
+        setSelectedVariant(record);
         setProductVariantFormVisible(true);
     }
 
@@ -188,11 +222,12 @@ const ProductManagement = () => {
 
     const variantColumns = [
         {title: 'Name', dataIndex: 'variantName', key: 'variantName'},
+        {title: 'Variant', dataIndex: 'variantString', key: 'variantString', width: 250},
         {title: 'Stock', dataIndex: 'stock', key: 'stock', width: 100},
         {
             title: 'Cost',
             dataIndex: 'cost',
-            width: 150,
+            width: 100,
             key: 'cost',
             align: "right",
             render: (value) => <CurrencyFormat decimalScale={0} prefix={"$"} value={value} displayType={'text'}
@@ -201,21 +236,22 @@ const ProductManagement = () => {
         {
             title: 'Price',
             align: "right",
-            width: 150,
+            width: 100,
             dataIndex: 'price',
             key: 'price',
             render: (value) => <CurrencyFormat decimalScale={0} prefix={"$"} value={value} displayType={'text'}
                                                thousandSeparator={true}/>
         },
         {
-            title: 'Action',
+            title: 'Actions',
             dataIndex: 'operation',
-            width: 150,
+            width: 120,
+            align: "right",
             key: 'operation',
             render: (value, record) => (
                 <Space size="small">
                     <Button type="text" shape={"default"} size={"small"}
-                            icon={<EditIcon fontSize={"small"}/>}/>
+                            icon={<EditIcon onClick={() => onPrepareEditVariant(record)} fontSize={"small"}/>}/>
                     <Popconfirm title="Are you sure to delete this variant?"
                                 okText="Yes"
                                 onConfirm={() => onDeleteVariant(record)}
@@ -230,9 +266,9 @@ const ProductManagement = () => {
     const nestedRowRenderer = (record) => {
         const readableSpec = getReadableSpecifications(record['specifications']);
         return (
-            <Space style={{display: "flex", flex: 1}} direction={"vertical"} size={"middle"}>
+            <Space key={record.id} style={{display: "flex", flex: 1}} direction={"vertical"} size={"middle"}>
                 <div>
-                    <span>Descriptions: {record.description}</span>
+                    <span><Text type="secondary">Descriptions: </Text>{record.description}</span>
                 </div>
                 <div>
                     <List
@@ -242,12 +278,13 @@ const ProductManagement = () => {
                         dataSource={readableSpec}
                         locale={{emptyText: "No specifications"}}
                         renderItem={item => <List.Item>
-                            <span>{item.key}: {item.values}</span>
+                            <span key={item.key}>{item.key}: {item.values}</span>
                         </List.Item>}
                     />
                 </div>
                 <h4>Variants:</h4>
-                <Table locale={{emptyText: "No variants"}} size={"small"} columns={variantColumns} pagination={false} dataSource={record.variants}/>
+                <Table locale={{emptyText: "No variants"}} size={"small"} columns={variantColumns} pagination={false}
+                       dataSource={record.variants}/>
             </Space>
         )
     }
@@ -256,7 +293,7 @@ const ProductManagement = () => {
     return (
         <Container>
             <Actions>
-                <Button onClick={() => setProductFormVisible(true)} type="primary" icon={<PlusOutlined/>}>
+                <Button onClick={onClickAddNewProduct} type="primary" icon={<PlusOutlined/>}>
                     Add New
                 </Button>
             </Actions>
@@ -266,9 +303,11 @@ const ProductManagement = () => {
                    expandable={{expandedRowRender: nestedRowRenderer}}
                    columns={generalProductColumns}/>
             <ProductForm visible={productFormVisible}
+                         initialValue={selectedProduct}
                          onCreate={onSubmitProductForm}
                          onCancel={() => setProductFormVisible(false)}/>
             <VariantForm visible={productVariantFormVisible}
+                         initialValue={selectedVariant}
                          onCreate={onCreateVariant}
                          onCancel={() => setProductVariantFormVisible(false)}/>
         </Container>

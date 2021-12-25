@@ -24,3 +24,8 @@ p {
 #login_form .LoginButton {
     margin-bottom: 0px !important;
 }
+
+.ant-checkbox-wrapper + .ant-checkbox-wrapper {
+    margin-left: 0 !important;
+    margin-top: 8px;
+}

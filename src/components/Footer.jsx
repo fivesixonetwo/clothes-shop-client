@@ -24,11 +24,11 @@ const Logo = styled.h1`
 `;
 
 const Desc = styled.p`
-  margin-bottom: 20px;
 `;
 
 const SocialContainer = styled.div`
   display: flex;
+  margin-top: 20px
 `;
 
 const SocialIcon = styled.div`

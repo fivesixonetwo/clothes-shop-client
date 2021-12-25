@@ -5,18 +5,12 @@ import {addAttribute, addAttributeValue, getAllAttributes, getCategories} from "
 import TextArea from "antd/lib/input/TextArea";
 import {MinusCircleOutlined, PlusOutlined} from '@ant-design/icons';
 import {addError} from "../redux/alertRedux";
+import {BASE_URL} from "../helpers/axiosInstance";
 
-const productModel = {
-    id: null,
-    parentId: null,
-    name: "",
-    imageUrl: "",
-    enabled: false,
-};
 
 const {Option} = Select;
 
-const ProductForm = ({visible, onCreate, onCancel, initialValue = productModel}) => {
+const ProductForm = ({visible, onCreate, onCancel, initialValue}) => {
     const [form] = Form.useForm();
     const dispatch = useDispatch();
 
@@ -25,13 +19,16 @@ const ProductForm = ({visible, onCreate, onCancel, initialValue = productModel})
     const [attributeName, setAttributeName] = useState("");
     const [attributeValue, setAttributeValue] = useState("");
     const [selectedAttributeName, setSelectedAttributeName] = useState(0);
+    const [removedGalleries, setRemovedGalleries] = useState([]);
 
     useEffect(() => {
-        dispatch(getCategories()).then((r) => {
-            setCategories(r.data);
-        });
-        refreshAttributes();
-    }, []);
+        if (visible) {
+            dispatch(getCategories()).then((r) => {
+                setCategories(r.data);
+            });
+            refreshAttributes();
+        }
+    }, [visible]);
 
     const refreshAttributes = () => {
         dispatch(getAllAttributes()).then((r) => {
@@ -98,12 +95,48 @@ const ProductForm = ({visible, onCreate, onCancel, initialValue = productModel})
         return lt1M ? false : Upload.LIST_IGNORE;
     }
 
+    const getInitialImages = (type) => {
+        if (initialValue) {
+            const images = [].concat(initialValue.images).filter(img => img.type === type);
+            if (type === "THUMBNAIL" && images) {
+                return [
+                    {
+                        id: images[0].id,
+                        url: BASE_URL + "products/images/" + images[0].url
+                    }
+                ]
+            } else if (images) {
+                return images.map(i => {
+                    return {
+                        existed: true,
+                        id: i.id,
+                        uid: i.id,
+                        url: BASE_URL + "products/images/" + i.url
+                    };
+                });
+            }
+        }
+        return [];
+    }
+
+    const getInitialValue = (field, defaultValue) => {
+        if (selectedAttributeName) return defaultValue;
+        if (field && field.key < initialValue["specificationIds"].length && initialValue && initialValue['specificationIds']) {
+            return initialValue['specificationIds'][field.key].name;
+        }
+        return defaultValue;
+    }
+
+    const onRemoveGallery = (e) => {
+        setRemovedGalleries(removedGalleries.concat(e));
+    }
+
     return (
         <Modal
             destroyOnClose={true}
             visible={visible}
-            title={initialValue.id ? "Update Product" : "Add Product"}
-            okText={initialValue.id ? "Update" : "Add"}
+            title={initialValue ? "Update Product" : "Add Product"}
+            okText={initialValue ? "Update" : "Add"}
             cancelText="Cancel"
             onCancel={onSelfCancel}
             width={850}
@@ -112,6 +145,7 @@ const ProductForm = ({visible, onCreate, onCancel, initialValue = productModel})
                     .validateFields()
                     .then(values => {
                         form.resetFields();
+                        values.removedGalleries = removedGalleries;
                         onCreate(values);
                     });
             }}
@@ -123,13 +157,13 @@ const ProductForm = ({visible, onCreate, onCancel, initialValue = productModel})
                 layout="horizontal"
                 name="form_in_modal"
             >
-                <Form.Item name={"id"} noStyle initialValue={initialValue.id}>
+                <Form.Item name={"id"} noStyle initialValue={initialValue ? initialValue.id : -1}>
                     <Input type="hidden"/>
                 </Form.Item>
                 <Form.Item
                     name="name"
                     shouldUpdate={true}
-                    initialValue={initialValue.name}
+                    initialValue={initialValue ? initialValue.name : ""}
                     label="Name"
                     rules={[{required: true, message: 'Please input name'}]}
                 >
@@ -139,6 +173,7 @@ const ProductForm = ({visible, onCreate, onCancel, initialValue = productModel})
                            label="Category"
                            name={"category"}
                            required
+                           initialValue={initialValue ? initialValue.category.id : null}
                            rules={[{required: true, message: 'Please select category!'}]}>
                     <Select placeholder={"Category"}>
                         {categories.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
@@ -147,20 +182,22 @@ const ProductForm = ({visible, onCreate, onCancel, initialValue = productModel})
                 <Form.Item
                     name="description"
                     shouldUpdate={true}
+                    initialValue={initialValue ? initialValue.description : ""}
                     label="Description"
                 >
                     <TextArea placeholder={"description"}/>
                 </Form.Item>
                 <Form.Item label={"Specifications"}>
-                    <Form.List name="specifications">
+                    <Form.List name="specifications"
+                               initialValue={initialValue ? initialValue['specificationIds'] : []}>
                         {(fields, {add, remove}) => (
                             <>
-                                {fields.map(field => (
+                                {fields.map((field, name) => (
                                     <Space key={field.key} align="baseline">
                                         <Form.Item
                                             {...field}
                                             label="Name"
-                                            name={[field.name, 'name']}
+                                            name={[name, 'name']}
                                             fieldKey={[field.fieldKey, 'name']}
                                             rules={[{required: true, message: 'Missing name'}]}
                                         >
@@ -199,7 +236,7 @@ const ProductForm = ({visible, onCreate, onCancel, initialValue = productModel})
                                         <Form.Item
                                             {...field}
                                             label="Value"
-                                            name={[field.name, 'value']}
+                                            name={[name, 'value']}
                                             fieldKey={[field.fieldKey, 'value']}
                                             rules={[{required: true, message: 'Missing value'}]}
                                         >
@@ -224,12 +261,11 @@ const ProductForm = ({visible, onCreate, onCancel, initialValue = productModel})
                                                     </div>
                                                 </div>
                                             )}>
-                                                {([].concat(attribute.attributeValues[selectedAttributeName] || [])).map(c =>
+                                                {([].concat(attribute.attributeValues[initialValue && initialValue.id ? getInitialValue(field, selectedAttributeName) : selectedAttributeName] || [])).map(c =>
                                                     <Option key={c.id}
                                                             value={c.id}>{c.value}</Option>)}
                                             </Select>
                                         </Form.Item>
-
                                         <MinusCircleOutlined onClick={() => remove(field.name)}/>
                                     </Space>
                                 ))}
@@ -244,7 +280,7 @@ const ProductForm = ({visible, onCreate, onCancel, initialValue = productModel})
                     </Form.List>
                 </Form.Item>
 
-                <Form.Item rules={[{required: true, message: 'Please select a thumbnail!'}]}
+                <Form.Item rules={[{required: !initialValue, message: 'Please select a thumbnail!'}]}
                            shouldUpdate={true}
                            label="Thumbnail"
                            name={"thumbnail"}>
@@ -252,6 +288,7 @@ const ProductForm = ({visible, onCreate, onCancel, initialValue = productModel})
                         beforeUpload={onBeforeUpload}
                         accept={".png,.jpeg,.jpg"}
                         onPreview={onPreview}
+                        defaultFileList={getInitialImages("THUMBNAIL")}
                         maxCount={1}
                         listType="picture-card"
                     >
@@ -261,12 +298,17 @@ const ProductForm = ({visible, onCreate, onCancel, initialValue = productModel})
                         </div>
                     </Upload>
                 </Form.Item>
-                <Form.Item shouldUpdate={true} label="Galleries" name={"galleries"}>
+                <Form.Item shouldUpdate={true}
+                           initialValue={getInitialImages("GALLERY")}
+                           label="Galleries"
+                           name={"galleries"}>
                     <Upload
                         beforeUpload={onBeforeUpload}
                         accept={".png,.jpeg,.jpg"}
                         onPreview={onPreview}
+                        defaultFileList={getInitialImages("GALLERY")}
                         maxCount={6}
+                        onRemove={onRemoveGallery}
                         listType="picture-card"
                     >
                         <div>

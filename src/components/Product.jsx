@@ -2,7 +2,7 @@ import {FavoriteBorderOutlined, ShoppingCartOutlined} from "@material-ui/icons";
 import {BASE_URL} from "../helpers/axiosInstance";
 import {Card, Tooltip} from 'antd';
 import {useDispatch} from "react-redux";
-import {addItem2Wishlist, addItemToCart} from "../redux/apiCalls";
+import {addItem2Wishlist, addItemToCart, getProfile} from "../redux/apiCalls";
 import {useHistory} from "react-router-dom";
 import styled from "styled-components";
 
@@ -18,6 +18,7 @@ const Footer = styled.div`
 
 const CustomCard = styled(Card)`
   transition: box-shadow 0.3s, border-color 0.3s;
+  margin: 5px;
 
   &:hover {
     border-color: transparent;
@@ -60,11 +61,16 @@ const Product = ({item}) => {
     }
 
     const onClickAddItemToCart = () => {
+        item.selectedVariant = item.variants[0];
         dispatch(addItemToCart(item));
     }
 
     const onAddWishlist = () => {
-        dispatch(addItem2Wishlist(item));
+        dispatch(addItem2Wishlist(item)).then((res) => {
+            if (res) {
+                dispatch(getProfile());
+            }
+        });
     }
 
     const onClickViewDetail = () => {
@@ -80,8 +86,9 @@ const Product = ({item}) => {
 
     return (
         <CustomCard
-            style={{width: 250}}
-            cover={<img style={{cursor: "pointer"}} onClick={onClickViewDetail} alt="example"
+            style={{width: 270}}
+            bordered={true}
+            cover={<img style={{cursor: "pointer", height: 270}} onClick={onClickViewDetail} alt="example"
                         src={getThumbnail()}/>}>
             <Meta title={item.name}/>
             <Footer>

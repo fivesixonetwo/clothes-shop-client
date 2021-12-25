@@ -19,6 +19,7 @@ const Container = styled.div`
   display: flex;
   flex: 1;
   margin-top: 0.5px;
+  margin-bottom: 1px;
 `;
 
 const GeneralProfile = styled.div`

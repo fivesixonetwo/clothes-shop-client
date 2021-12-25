@@ -5,6 +5,7 @@ import {getProfile, removeWishlistItem} from "../redux/apiCalls";
 import {Button, Image, Popconfirm, Space, Table, Tooltip} from "antd";
 import {BASE_URL} from "../helpers/axiosInstance";
 import DeleteIcon from "@mui/icons-material/Delete";
+import {useHistory} from "react-router-dom";
 
 const Container = styled.div`
   display: flex;
@@ -39,6 +40,7 @@ const Content = styled.div`
 `
 const Wishlist = () => {
     const dispatch = useDispatch();
+    const history = useHistory();
     const {profile} = useSelector((state) => state.user);
 
     useEffect(() => {
@@ -51,12 +53,16 @@ const Wishlist = () => {
         });
     }
 
+    const onClickOnProduct = (id) => {
+        history.push("/products/" + id);
+    }
+
     const columns = [
         {
             title: 'Product',
             dataIndex: 'product',
             key: 'product',
-            render: (product) => {
+            render: (product, record) => {
                 const thumbnail = [].concat(product.images).find(img => img.type === "THUMBNAIL");
                 return (
                     <Space size="large">
@@ -67,7 +73,7 @@ const Wishlist = () => {
                             preview={true}
                             src={BASE_URL + "products/images/" + thumbnail.url}
                         />
-                        <h4 style={{cursor: "pointer"}}>{product.name}</h4>
+                        <h4 onClick={() => onClickOnProduct(product.id)} style={{cursor: "pointer"}}>{product.name}</h4>
                     </Space>
                 )
             }
@@ -104,7 +110,7 @@ const Wishlist = () => {
                 <p>Your Wishlist</p>
             </PageHeader>
             <Content>
-                <Table style={{flex: 1}} dataSource={profile && profile['wishlist'] || []} columns={columns}/>
+                <Table pagination={false} style={{flex: 1}} dataSource={(profile && profile['wishlist']) || []} columns={columns}/>
             </Content>
         </Container>
     );

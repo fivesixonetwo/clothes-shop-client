@@ -19,6 +19,9 @@ import {resetNotification} from "./redux/alertRedux";
 import NotFound from "./pages/NotFound";
 import BaseAdmin from "./pages/BaseAdmin";
 import ProductDetails from "./pages/ProductDetails";
+import Checkout from "./pages/Checkout";
+import SuccessCheckout from "./pages/SuccessCheckout";
+import FilterProducts from "./pages/FilterProducts";
 
 const Container = styled.div`
   width: 100%;
@@ -54,8 +57,11 @@ function App() {
                     <Switch>
                         <Route exact path="/" component={Home}/>
                         <Route exact path={"/cart"} component={Cart}/>
+                        <Route exact path={"/filter-products"} component={FilterProducts}/>
                         <PrivateRoute exact path="/profile" component={Profile}/>
                         <PrivateRoute exact path="/wishlist" component={Wishlist}/>
+                        <PrivateRoute exact path="/checkout" component={Checkout}/>
+                        <PrivateRoute exact path="/checkout-success" component={SuccessCheckout}/>
                         <PrivateRoute exact path="/admin" component={BaseAdmin}/>
                         <Route path={"/products/:id"} component={ProductDetails}/>
                         <Route path="/login">

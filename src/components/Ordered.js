@@ -1,18 +1,17 @@
 import styled from "styled-components";
-import {useDispatch} from "react-redux";
 import {useEffect, useState} from "react";
-import {changeOrderStatus, getAllOrder} from "../redux/apiCalls";
-import {Button, Image, Space, Table, Tooltip, Typography} from "antd";
-import EditIcon from '@mui/icons-material/Edit';
+import {useDispatch} from "react-redux";
+import {cancelOrder, getMyOrders} from "../redux/apiCalls";
+import {Button, Image, Popconfirm, Space, Table, Tooltip, Typography} from "antd";
+import CancelIcon from '@mui/icons-material/Cancel';
 import {BASE_URL} from "../helpers/axiosInstance";
-import OrderStatusDialog from "../components/OrderStatusDialog";
 
 const {Text} = Typography;
 
 const Container = styled.div`
   display: flex;
-  flex: 1;
   flex-direction: column;
+  flex: 1;
 `;
 
 const AddressItem = styled.div`
@@ -21,30 +20,25 @@ const AddressItem = styled.div`
   flex: 1;
 `;
 
-const OrderManagement = () => {
+const Ordered = () => {
     const dispatch = useDispatch();
+
     const [orders, setOrders] = useState([]);
-    const [orderStatusVisible, setOrderStatusVisible] = useState(false);
-    const [selectedOrder, setSelectedOrder] = useState(null);
 
     useEffect(() => {
         refreshOrder();
     }, []);
 
     const refreshOrder = () => {
-        dispatch(getAllOrder()).then((r) => {
-            setOrders(r.data);
+        dispatch(getMyOrders()).then((res) => {
+            if (res.data) {
+                setOrders(res.data);
+            }
         });
     }
 
-    const onBeingChange = (orderId) => {
-        setSelectedOrder(orderId);
-        setOrderStatusVisible(true);
-    }
-
-    const onOk = (status) => {
-        setOrderStatusVisible(false);
-        dispatch(changeOrderStatus(selectedOrder, status)).then(() => {
+    const onCancelOrder = (id) => {
+        dispatch(cancelOrder(id)).then(() => {
             refreshOrder();
         });
     }
@@ -102,8 +96,8 @@ const OrderManagement = () => {
 
     const nestedRowRenderer = (record) => {
         return (
-            <Space key={record.id} style={{display: "flex", flex: 1}} direction={"vertical"} size={"middle"}>
-                <AddressItem key={record.id}>
+            <Space style={{display: "flex", flex: 1}} direction={"vertical"} size={"middle"}>
+                <AddressItem>
                     <span style={{display: "flex"}}><Text
                         type="secondary"
                         style={{marginRight: 5}}>Shipping Address: </Text><h4>{record.name}</h4></span>
@@ -113,7 +107,7 @@ const OrderManagement = () => {
                     <span><Text style={{marginRight: 5}}
                                 type="secondary">Phone number: </Text>{record.phoneNumber}</span>
                 </AddressItem>
-                <Table rowKey={record.id} locale={{emptyText: "No Items"}} size={"small"}
+                <Table locale={{emptyText: "No Items"}} size={"small"}
                        columns={orderItemColumns} pagination={false} dataSource={record.orderItems}/>
             </Space>
         )
@@ -166,15 +160,22 @@ const OrderManagement = () => {
             title: 'Action',
             width: 150,
             dataIndex: "orderStatus",
-            align: "right",
             key: 'action',
             render: (value, record) => (
-                <Tooltip key={record.id} title={"Edit Order"}>
-                    <Button
-                        onClick={() => onBeingChange(record.id)}
-                        type="text" shape={"default"}
-                        icon={<EditIcon fontSize={"small"}/>}/>
-                </Tooltip>
+                <Popconfirm
+                    title="Are you sure to cancel this order?"
+                    okText="Yes"
+                    onConfirm={() => onCancelOrder(record.id)}
+                    disabled={value === "Shipped" || value === "Cancelled" || value === "Declined"}
+                    cancelText="No"
+                    key={record.id}
+                >
+                    <Tooltip key={record.id} title={"Cancel Order"}>
+                        <Button disabled={value === "Shipped" || value === "Cancelled" || value === "Declined"} danger
+                                type="text" shape={"default"}
+                                icon={<CancelIcon fontSize={"small"}/>}/>
+                    </Tooltip>
+                </Popconfirm>
             ),
         }
     ]
@@ -184,14 +185,11 @@ const OrderManagement = () => {
             <Table pagination={false}
                    style={{flex: 1}}
                    rowKey={"id"}
-                   expandable={{expandedRowRender: nestedRowRenderer}}
                    dataSource={orders}
+                   expandable={{expandedRowRender: nestedRowRenderer}}
                    columns={columns}/>
-            <OrderStatusDialog visible={orderStatusVisible}
-                               onOk={onOk}
-                               onCancel={() => setOrderStatusVisible(false)}/>
         </Container>
     );
 };
 
-export default OrderManagement;
+export default Ordered;

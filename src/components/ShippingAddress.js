@@ -113,8 +113,8 @@ const ShippingAddress = () => {
                                 {item.default && <Mark>Default</Mark>}
                             </div>
                             <span><Text
-                                type="secondary">Address: </Text>{item.address} - {item.ward} - {item.district} - {item.city}</span>
-                            <span><Text type="secondary">Phone number: </Text>{item.phoneNumber}</span>
+                                type="secondary" style={{marginRight: 5}}>Address: </Text>{item.address} - {item.ward} - {item.district} - {item.city}</span>
+                            <span><Text type="secondary" style={{marginRight: 5}}>Phone number: </Text>{item.phoneNumber}</span>
 
                         </AddressItem>
                         <AddressActions>
