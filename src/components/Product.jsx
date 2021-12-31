@@ -1,10 +1,12 @@
 import {FavoriteBorderOutlined, ShoppingCartOutlined} from "@material-ui/icons";
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import {BASE_URL} from "../helpers/axiosInstance";
 import {Card, Tooltip} from 'antd';
-import {useDispatch} from "react-redux";
-import {addItem2Wishlist, addItemToCart, getProfile} from "../redux/apiCalls";
+import {useDispatch, useSelector} from "react-redux";
+import {addItem2Wishlist, addItemToCart, getProfile, removeWishlistItem} from "../redux/apiCalls";
 import {useHistory} from "react-router-dom";
 import styled from "styled-components";
+import {useEffect} from 'react';
 
 const {Meta} = Card;
 
@@ -54,6 +56,13 @@ const Product = ({item}) => {
     const dispatch = useDispatch();
     const history = useHistory();
 
+    const { profile } = useSelector((state) => state.user);
+    
+    useEffect(() => {
+         dispatch(getProfile());
+    }, [dispatch]);
+    
+   
     const getThumbnail = () => {
         if (!item) return null;
         const thumbnail = [].concat(item.images).find(img => img.type === "THUMBNAIL");
@@ -63,6 +72,15 @@ const Product = ({item}) => {
     const onClickAddItemToCart = () => {
         item.selectedVariant = item.variants[0];
         dispatch(addItemToCart(item));
+    }
+
+    const onConfirmDelete = () => {
+        const id = profile.wishlist.find(i => i.product.id === item.id).id
+        if(id){
+            dispatch(removeWishlistItem(id)).then(() => {
+                dispatch(getProfile());
+            });
+        }
     }
 
     const onAddWishlist = () => {
@@ -93,9 +111,23 @@ const Product = ({item}) => {
             <Meta title={item.name}/>
             <Footer>
                 <Tooltip title={"Add to Wishlist"}>
-                    <Icon>
-                        <FavoriteBorderOutlined onClick={onAddWishlist}/>
+                   {
+                       profile 
+                       ?
+                        <Icon>
+                        {
+                            profile.wishlist.find(i => i.product.id === item.id)
+                            ? <FavoriteIcon color='error' onClick={onConfirmDelete}/>
+                            : <FavoriteBorderOutlined onClick={onAddWishlist}/>
+                        }
                     </Icon>
+                    :
+                    <Icon>
+                    {
+                            <FavoriteBorderOutlined onClick={onAddWishlist}/>
+                    }
+                </Icon>
+                   }
                 </Tooltip>
                 <Price>
                     <div>${getItemPrice()}</div>

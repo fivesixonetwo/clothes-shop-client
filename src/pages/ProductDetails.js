@@ -1,18 +1,19 @@
 import styled from "styled-components";
-import {useEffect, useState} from "react";
-import {useHistory, useParams} from "react-router-dom";
-import {useDispatch} from "react-redux";
-import {addItem2Wishlist, addItemToCart, getProductDetail, getProfile} from "../redux/apiCalls";
-import {Button, Divider, InputNumber, Select, Typography} from "antd";
-import {BASE_URL} from "../helpers/axiosInstance";
-import {ShoppingCartOutlined} from "@ant-design/icons";
-import {FavoriteBorderOutlined} from "@material-ui/icons";
-import {getReadableSpecifications} from "../helpers/utils";
+import { useEffect, useState } from "react";
+import { useHistory, useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { addItem2Wishlist, addItemToCart, getProductDetail, getProfile, removeWishlistItem } from "../redux/apiCalls";
+import { Button, Divider, InputNumber, Select, Typography } from "antd";
+import { BASE_URL } from "../helpers/axiosInstance";
+import { ShoppingCartOutlined } from "@ant-design/icons";
+import { FavoriteBorderOutlined } from "@material-ui/icons";
+import { getReadableSpecifications } from "../helpers/utils";
 import SimpleImageSlider from "react-simple-image-slider";
-import {useSnackbar} from "notistack";
+import { useSnackbar } from "notistack";
+import FavoriteIcon from '@mui/icons-material/Favorite';
 
-const {Text} = Typography;
-const {Option} = Select;
+const { Text } = Typography;
+const { Option } = Select;
 
 const Container = styled.div`
   display: flex;
@@ -96,14 +97,16 @@ const TierWrapper = styled.div`
 `
 
 const ProductDetails = () => {
-    const {id} = useParams();
+    const { id } = useParams();
     const dispatch = useDispatch();
-    const {enqueueSnackbar} = useSnackbar();
+    const { enqueueSnackbar } = useSnackbar();
 
     const [product, setProduct] = useState({});
     const [images, setImages] = useState([]);
     const [quantity, setQuantity] = useState(1);
     const [selectedVariant, setSelectedVariant] = useState({});
+
+    const { profile } = useSelector((state) => state.user);
 
     const history = useHistory();
 
@@ -125,7 +128,7 @@ const ProductDetails = () => {
         const baseUrl = BASE_URL + "products/images/";
         if (selectedVariant && selectedVariant.images) {
             const result = selectedVariant.images.map((it) => {
-                return {url: baseUrl + it.url};
+                return { url: baseUrl + it.url };
             });
             setImages(result.concat(getAllProductImages()));
         }
@@ -142,10 +145,23 @@ const ProductDetails = () => {
         const baseUrl = BASE_URL + "products/images/";
         if (product.images && product.images.length) {
             product.images.forEach((item) => {
-                result.push({url: baseUrl + item.url});
+                result.push({ url: baseUrl + item.url });
             });
         }
         return result;
+    }
+
+    useEffect(() => {
+        dispatch(getProfile());
+    }, [dispatch]);
+
+    const onConfirmDelete = () => {
+        const deleteId = profile.wishlist.find(i => i.product.id === +id)
+        if (deleteId) {
+            dispatch(removeWishlistItem(deleteId.id)).then(() => {
+                dispatch(getProfile());
+            });
+        }
     }
 
     const onQuantityChange = (v) => {
@@ -154,7 +170,7 @@ const ProductDetails = () => {
 
     const onClickAdd2Cart = () => {
         if (quantity > selectedVariant['stock']) {
-            enqueueSnackbar("Max quantity must less than " + selectedVariant['stock'], {variant: "error"});
+            enqueueSnackbar("Max quantity must less than " + selectedVariant['stock'], { variant: "error" });
             return;
         }
         if (product.variants) {
@@ -174,7 +190,7 @@ const ProductDetails = () => {
 
     const onClickBuyNow = () => {
         if (quantity > selectedVariant['stock']) {
-            enqueueSnackbar("Max quantity must less than " + selectedVariant['stock'], {variant: "error"});
+            enqueueSnackbar("Max quantity must less than " + selectedVariant['stock'], { variant: "error" });
             return;
         }
         if (product.variants) {
@@ -203,15 +219,15 @@ const ProductDetails = () => {
                         images={images}
                         startIndex={0}
                         showBullets={true}
-                        showNavs={true}/>}
+                        showNavs={true} />}
                 </ProductImages>
                 <ProductInfo>
                     <h2>{product.name}</h2>
-                    <Text style={{color: "#ee4d2d", fontSize: 18}} strong>${selectedVariant.price}</Text>
+                    <Text style={{ color: "#ee4d2d", fontSize: 18 }} strong>${selectedVariant.price}</Text>
                     <TierWrapper>
                         <div><Text type="secondary">Variant</Text></div>
                         <Select onChange={onVariantChange} value={selectedVariant.id || -1}
-                                style={{minWidth: 250, marginLeft: 20}}>
+                            style={{ minWidth: 250, marginLeft: 20 }}>
                             {[].concat(product.variants || []).map((option) => {
                                 return (<Option key={option.id} value={option.id}>
                                     {option['variantString']}
@@ -220,29 +236,41 @@ const ProductDetails = () => {
                         </Select>
                     </TierWrapper>
                     <QuantityInput>
-                        <div><Text type="secondary" style={{width: 80}}>Quantity</Text> <Text
-                            type="danger" style={{marginLeft: 10}}>{selectedVariant.stock} items available</Text></div>
+                        <div><Text type="secondary" style={{ width: 80 }}>Quantity</Text> <Text
+                            type="danger" style={{ marginLeft: 10 }}>{selectedVariant.stock} items available</Text></div>
                         <div>
                             <InputNumber onChange={onQuantityChange} min={1} max={selectedVariant['stock']}
-                                         defaultValue={quantity}/>
+                                defaultValue={quantity} />
                             <Button disabled={selectedVariant['stock'] === 0} onClick={onClickAdd2Cart} size={"middle"}
-                                    type="primary"
-                                    icon={<ShoppingCartOutlined/>}>
+                                type="primary"
+                                icon={<ShoppingCartOutlined />}>
                                 Add to Cart
                             </Button>
                             <Button disabled={selectedVariant['stock'] === 0} onClick={onClickBuyNow} type="primary"
-                                    danger>Buy Now</Button>
-                            <Button onClick={onClickAdd2Favorite} type="default" icon={<FavoriteBorderOutlined/>}/>
+                                danger>Buy Now</Button>
+                            {
+                                profile
+                                    ?
+                                    <>
+                                        {
+                                            profile.wishlist.find(i => i.product.id === +id)
+                                                ? <FavoriteIcon color='error' onClick={onConfirmDelete} />
+                                                : <FavoriteBorderOutlined onClick={onClickAdd2Favorite} />
+                                        }
+                                    </>
+                                    :
+                                    <FavoriteBorderOutlined onClick={onClickAdd2Favorite} />
+                            }
                         </div>
                     </QuantityInput>
                 </ProductInfo>
             </ProductWrapper>
             <div>
                 <h3>Product Specifications:</h3>
-                <Divider style={{margin: 10}} plain dashed={true}/>
+                <Divider style={{ margin: 10 }} plain dashed={true} />
                 {getReadableSpecifications(product['specifications'] || []).map((value, index) => <SpecRow
                     key={index}>
-                    <div style={{width: 130}}>
+                    <div style={{ width: 130 }}>
                         <Text type="secondary">{value.key}</Text>
                     </div>
                     <div>
@@ -252,7 +280,7 @@ const ProductDetails = () => {
             </div>
             <div>
                 <h3>Product Description:</h3>
-                <Divider style={{margin: 10}} plain dashed={true}/>
+                <Divider style={{ margin: 10 }} plain dashed={true} />
                 <p>{product.description}</p>
             </div>
         </Content>
