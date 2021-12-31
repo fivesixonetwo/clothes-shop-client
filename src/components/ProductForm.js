@@ -1,21 +1,21 @@
-import {Button, Divider, Form, Input, Modal, Select, Space, Upload} from "antd";
-import {useEffect, useState} from "react";
-import {useDispatch} from "react-redux";
-import {addAttribute, addAttributeValue, getAllAttributes, getCategories} from "../redux/apiCalls";
+import { Button, Divider, Form, Input, Modal, Select, Space, Upload } from "antd";
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { addAttribute, addAttributeValue, getAllAttributes, getCategories } from "../redux/apiCalls";
 import TextArea from "antd/lib/input/TextArea";
-import {MinusCircleOutlined, PlusOutlined} from '@ant-design/icons';
-import {addError} from "../redux/alertRedux";
-import {BASE_URL} from "../helpers/axiosInstance";
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { addError } from "../redux/alertRedux";
+import { BASE_URL } from "../helpers/axiosInstance";
 
 
-const {Option} = Select;
+const { Option } = Select;
 
-const ProductForm = ({visible, onCreate, onCancel, initialValue}) => {
+const ProductForm = ({ visible, onCreate, onCancel, initialValue }) => {
     const [form] = Form.useForm();
     const dispatch = useDispatch();
 
     const [categories, setCategories] = useState([]);
-    const [attribute, setAttribute] = useState({attributes: [], attributeValues: {}, values: []});
+    const [attribute, setAttribute] = useState({ attributes: [], attributeValues: {}, values: [] });
     const [attributeName, setAttributeName] = useState("");
     const [attributeValue, setAttributeValue] = useState("");
     const [selectedAttributeName, setSelectedAttributeName] = useState(0);
@@ -90,7 +90,7 @@ const ProductForm = ({visible, onCreate, onCancel, initialValue}) => {
     const onBeforeUpload = (file) => {
         const lt1M = file.size / 1024 / 1024 < 1;
         if (!lt1M) {
-            dispatch(addError({message: "Image must less than 1MB", timestamp: new Date().getTime()}));
+            dispatch(addError({ message: "Image must less than 1MB", timestamp: new Date().getTime() }));
         }
         return lt1M ? false : Upload.LIST_IGNORE;
     }
@@ -151,30 +151,30 @@ const ProductForm = ({visible, onCreate, onCancel, initialValue}) => {
             }}
         >
             <Form
-                labelCol={{span: 4}}
-                wrapperCol={{span: 18}}
+                labelCol={{ span: 4 }}
+                wrapperCol={{ span: 18 }}
                 form={form}
                 layout="horizontal"
                 name="form_in_modal"
             >
                 <Form.Item name={"id"} noStyle initialValue={initialValue ? initialValue.id : -1}>
-                    <Input type="hidden"/>
+                    <Input type="hidden" />
                 </Form.Item>
                 <Form.Item
                     name="name"
                     shouldUpdate={true}
                     initialValue={initialValue ? initialValue.name : ""}
                     label="Name"
-                    rules={[{required: true, message: 'Please input name'}]}
+                    rules={[{ required: true, message: 'Please input name' }]}
                 >
-                    <Input placeholder={"Name"}/>
+                    <Input placeholder={"Name"} />
                 </Form.Item>
                 <Form.Item hasFeedback
-                           label="Category"
-                           name={"category"}
-                           required
-                           initialValue={initialValue ? initialValue.category.id : null}
-                           rules={[{required: true, message: 'Please select category!'}]}>
+                    label="Category"
+                    name={"category"}
+                    required
+                    initialValue={initialValue ? initialValue.category.id : null}
+                    rules={[{ required: true, message: 'Please select category!' }]}>
                     <Select placeholder={"Category"}>
                         {categories.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
                     </Select>
@@ -185,12 +185,12 @@ const ProductForm = ({visible, onCreate, onCancel, initialValue}) => {
                     initialValue={initialValue ? initialValue.description : ""}
                     label="Description"
                 >
-                    <TextArea placeholder={"description"}/>
+                    <TextArea placeholder={"description"} />
                 </Form.Item>
                 <Form.Item label={"Specifications"}>
                     <Form.List name="specifications"
-                               initialValue={initialValue ? initialValue['specificationIds'] : []}>
-                        {(fields, {add, remove}) => (
+                        initialValue={initialValue ? initialValue['specificationIds'] : []}>
+                        {(fields, { add, remove }) => (
                             <>
                                 {fields.map((field, name) => (
                                     <Space key={field.key} align="baseline">
@@ -199,38 +199,38 @@ const ProductForm = ({visible, onCreate, onCancel, initialValue}) => {
                                             label="Name"
                                             name={[name, 'name']}
                                             fieldKey={[field.fieldKey, 'name']}
-                                            rules={[{required: true, message: 'Missing name'}]}
+                                            rules={[{ required: true, message: 'Missing name' }]}
                                         >
-                                            <Select onChange={onAttributeNameChange} style={{width: 150}}
-                                                    dropdownRender={menu => (
-                                                        <div>
-                                                            {menu}
-                                                            <Divider style={{margin: '4px 0'}}/>
-                                                            <div style={{
-                                                                display: 'flex',
-                                                                flexWrap: 'nowrap',
-                                                                padding: 8
-                                                            }}>
-                                                                <Input size={"small"}
-                                                                       style={{flex: 'auto', fontSize: 12}}
-                                                                       value={attributeName}
-                                                                       placeholder={"name..."}
-                                                                       onChange={(e) => setAttributeName(e.target.value)}/>
-                                                                <a onClick={onAddAttribute}
-                                                                   style={{
-                                                                       flex: 'none',
-                                                                       padding: '4px',
-                                                                       display: 'block',
-                                                                       cursor: 'pointer'
-                                                                   }}
-                                                                >
-                                                                    <PlusOutlined/>
-                                                                </a>
+                                            <Select onChange={onAttributeNameChange} style={{ width: 150 }}
+                                                dropdownRender={menu => (
+                                                    <div>
+                                                        {menu}
+                                                        <Divider style={{ margin: '4px 0' }} />
+                                                        <div style={{
+                                                            display: 'flex',
+                                                            flexWrap: 'nowrap',
+                                                            padding: 8
+                                                        }}>
+                                                            <Input size={"small"}
+                                                                style={{ flex: 'auto', fontSize: 12 }}
+                                                                value={attributeName}
+                                                                placeholder={"name..."}
+                                                                onChange={(e) => setAttributeName(e.target.value)} />
+                                                            <div onClick={onAddAttribute}
+                                                                style={{
+                                                                    flex: 'none',
+                                                                    padding: '4px',
+                                                                    display: 'block',
+                                                                    cursor: 'pointer'
+                                                                }}
+                                                            >
+                                                                <PlusOutlined />
                                                             </div>
                                                         </div>
-                                                    )}>
+                                                    </div>
+                                                )}>
                                                 {attribute.attributes.map(c => <Option key={c.id}
-                                                                                       value={c.id}>{c.name}</Option>)}
+                                                    value={c.id}>{c.name}</Option>)}
                                             </Select>
                                         </Form.Item>
                                         <Form.Item
@@ -238,40 +238,40 @@ const ProductForm = ({visible, onCreate, onCancel, initialValue}) => {
                                             label="Value"
                                             name={[name, 'value']}
                                             fieldKey={[field.fieldKey, 'value']}
-                                            rules={[{required: true, message: 'Missing value'}]}
+                                            rules={[{ required: true, message: 'Missing value' }]}
                                         >
-                                            <Select style={{width: 300}} dropdownRender={menu => (
+                                            <Select style={{ width: 300 }} dropdownRender={menu => (
                                                 <div>
                                                     {menu}
-                                                    <Divider style={{margin: '4px 0'}}/>
-                                                    <div style={{display: 'flex', flexWrap: 'nowrap', padding: 8}}>
-                                                        <Input size={"small"} style={{flex: 'auto', fontSize: 12}}
-                                                               value={attributeValue}
-                                                               onChange={(e) => setAttributeValue(e.target.value)}/>
-                                                        <a onClick={onAddAttributeValue}
-                                                           style={{
-                                                               flex: 'none',
-                                                               padding: '4px',
-                                                               display: 'block',
-                                                               cursor: 'pointer'
-                                                           }}
+                                                    <Divider style={{ margin: '4px 0' }} />
+                                                    <div style={{ display: 'flex', flexWrap: 'nowrap', padding: 8 }}>
+                                                        <Input size={"small"} style={{ flex: 'auto', fontSize: 12 }}
+                                                            value={attributeValue}
+                                                            onChange={(e) => setAttributeValue(e.target.value)} />
+                                                        <div onClick={onAddAttributeValue}
+                                                            style={{
+                                                                flex: 'none',
+                                                                padding: '4px',
+                                                                display: 'block',
+                                                                cursor: 'pointer'
+                                                            }}
                                                         >
-                                                            <PlusOutlined/>
-                                                        </a>
+                                                            <PlusOutlined />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}>
                                                 {([].concat(attribute.attributeValues[initialValue && initialValue.id ? getInitialValue(field, selectedAttributeName) : selectedAttributeName] || [])).map(c =>
                                                     <Option key={c.id}
-                                                            value={c.id}>{c.value}</Option>)}
+                                                        value={c.id}>{c.value}</Option>)}
                                             </Select>
                                         </Form.Item>
-                                        <MinusCircleOutlined onClick={() => remove(field.name)}/>
+                                        <MinusCircleOutlined onClick={() => remove(field.name)} />
                                     </Space>
                                 ))}
 
                                 <Form.Item>
-                                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined/>}>
+                                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
                                         Add Specification
                                     </Button>
                                 </Form.Item>
@@ -280,10 +280,10 @@ const ProductForm = ({visible, onCreate, onCancel, initialValue}) => {
                     </Form.List>
                 </Form.Item>
 
-                <Form.Item rules={[{required: !initialValue, message: 'Please select a thumbnail!'}]}
-                           shouldUpdate={true}
-                           label="Thumbnail"
-                           name={"thumbnail"}>
+                <Form.Item rules={[{ required: !initialValue, message: 'Please select a thumbnail!' }]}
+                    shouldUpdate={true}
+                    label="Thumbnail"
+                    name={"thumbnail"}>
                     <Upload
                         beforeUpload={onBeforeUpload}
                         accept={".png,.jpeg,.jpg"}
@@ -293,15 +293,15 @@ const ProductForm = ({visible, onCreate, onCancel, initialValue}) => {
                         listType="picture-card"
                     >
                         <div>
-                            <PlusOutlined/>
-                            <div style={{marginTop: 8}}>Upload</div>
+                            <PlusOutlined />
+                            <div style={{ marginTop: 8 }}>Upload</div>
                         </div>
                     </Upload>
                 </Form.Item>
                 <Form.Item shouldUpdate={true}
-                           initialValue={getInitialImages("GALLERY")}
-                           label="Galleries"
-                           name={"galleries"}>
+                    initialValue={getInitialImages("GALLERY")}
+                    label="Galleries"
+                    name={"galleries"}>
                     <Upload
                         beforeUpload={onBeforeUpload}
                         accept={".png,.jpeg,.jpg"}
@@ -312,8 +312,8 @@ const ProductForm = ({visible, onCreate, onCancel, initialValue}) => {
                         listType="picture-card"
                     >
                         <div>
-                            <PlusOutlined/>
-                            <div style={{marginTop: 8}}>Upload</div>
+                            <PlusOutlined />
+                            <div style={{ marginTop: 8 }}>Upload</div>
                         </div>
                     </Upload>
                 </Form.Item>

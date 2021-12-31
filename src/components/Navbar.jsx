@@ -87,6 +87,8 @@ const StyledLink = styled(Link)`
 `;
 
 const Navbar = () => {
+    const dispatch = useDispatch();
+    const history = useHistory();
     const {currentUser} = useSelector((state) => state.user);
     const {profile} = useSelector((state) => state.user);
     const {items} = useSelector((state) => state.cart);
@@ -99,10 +101,8 @@ const Navbar = () => {
                 setCategories(r.data);
             }
         });
-    }, []);
+    }, [dispatch]);
 
-    const dispatch = useDispatch();
-    const history = useHistory();
     const {enqueueSnackbar} = useSnackbar();
 
     const onClickLogOut = () => {
@@ -141,7 +141,7 @@ const Navbar = () => {
                 </Link>
                 <div>
                     {
-                        [].concat(categories).slice(0, 4).map((cate) =>
+                        [].concat(categories).slice(0, 5).map((cate) =>
                             <Link key={cate.id} to={"/filter-products?category=" + cate.id}>
                                 <h3>{cate.name}</h3>
                             </Link>
@@ -149,8 +149,6 @@ const Navbar = () => {
                     }
                 </div>
             </Left>
-            <Center>
-            </Center>
             <Right>
                 <StyledLink to="/register">
                     <MenuItem key={"2"} hidden={currentUser != null}>REGISTER</MenuItem>

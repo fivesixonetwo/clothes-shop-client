@@ -1,11 +1,11 @@
 import styled from "styled-components";
-import {useDispatch, useSelector} from "react-redux";
-import {useEffect} from "react";
-import {getProfile, removeWishlistItem} from "../redux/apiCalls";
-import {Button, Image, Popconfirm, Space, Table, Tooltip} from "antd";
-import {BASE_URL} from "../helpers/axiosInstance";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { getProfile, removeWishlistItem } from "../redux/apiCalls";
+import { Button, Image, Popconfirm, Space, Table, Tooltip } from "antd";
+import { BASE_URL } from "../helpers/axiosInstance";
 import DeleteIcon from "@mui/icons-material/Delete";
-import {useHistory} from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 const Container = styled.div`
   display: flex;
@@ -41,11 +41,7 @@ const Content = styled.div`
 const Wishlist = () => {
     const dispatch = useDispatch();
     const history = useHistory();
-    const {profile} = useSelector((state) => state.user);
-
-    useEffect(() => {
-        dispatch(getProfile());
-    }, []);
+    const { profile } = useSelector((state) => state.user);
 
     const onConfirmDelete = (record) => {
         dispatch(removeWishlistItem(record.id)).then(() => {
@@ -69,11 +65,11 @@ const Wishlist = () => {
                         <Image
                             height={45}
                             width={45}
-                            style={{cursor: "pointer"}}
+                            style={{ cursor: "pointer" }}
                             preview={true}
                             src={BASE_URL + "products/images/" + thumbnail.url}
                         />
-                        <h4 onClick={() => onClickOnProduct(product.id)} style={{cursor: "pointer"}}>{product.name}</h4>
+                        <h4 onClick={() => onClickOnProduct(product.id)} style={{ cursor: "pointer" }}>{product.name}</h4>
                     </Space>
                 )
             }
@@ -91,13 +87,13 @@ const Wishlist = () => {
             render: (value, record) => (
                 <Tooltip title={"Delete"}>
                     <Popconfirm disabled={record.deleted}
-                                title="Are you sure to delete this item?"
-                                okText="Yes"
-                                onConfirm={() => onConfirmDelete(record)}
-                                cancelText="No"
+                        title="Are you sure to delete this item?"
+                        okText="Yes"
+                        onConfirm={() => onConfirmDelete(record)}
+                        cancelText="No"
                     >
                         <Button disabled={record.deleted} type="text" shape={"default"}
-                                icon={<DeleteIcon sx={{color: "red"}} fontSize={"small"}/>}/>
+                            icon={<DeleteIcon sx={{ color: "red" }} fontSize={"small"} />} />
                     </Popconfirm>
                 </Tooltip>
             ),
@@ -110,7 +106,7 @@ const Wishlist = () => {
                 <p>Your Wishlist</p>
             </PageHeader>
             <Content>
-                <Table pagination={false} style={{flex: 1}} dataSource={(profile && profile['wishlist']) || []} columns={columns}/>
+                <Table pagination={false} style={{ flex: 1 }} dataSource={(profile && profile['wishlist']) || []} columns={columns} />
             </Content>
         </Container>
     );

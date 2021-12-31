@@ -53,7 +53,7 @@ const Home = () => {
                     <Title>NEW ARRIVALS</Title>
                 </div>
                 <ProductContainer>
-                    {newArrivals.map((item) => <Product item={item} key={item.id}/>)}
+                    {newArrivals.map((item) => <Product item={item} id={item.id} key={item.id}/>)}
                 </ProductContainer>
             </Section>
             <Section>

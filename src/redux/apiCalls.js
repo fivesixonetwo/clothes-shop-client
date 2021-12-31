@@ -1,7 +1,7 @@
-import {getProfileFailed, getProfileSuccess, loginFailure, loginStart, loginSuccess} from "./userRedux";
-import {privateRequest, publicRequest} from "../helpers/axiosInstance";
-import {addError, addSuccess} from "./alertRedux";
-import {addNew, editQuantity, remove} from "./cartRedux";
+import { getProfileFailed, getProfileSuccess, loginFailure, loginStart, loginSuccess } from "./userRedux";
+import { privateRequest, publicRequest } from "../helpers/axiosInstance";
+import { addError, addSuccess } from "./alertRedux";
+import { addNew, editQuantity, remove } from "./cartRedux";
 
 export const login = (user) => async (dispatch) => {
     dispatch(loginStart());
@@ -154,7 +154,7 @@ export const getAllAttributes = () => async (dispatch) => {
 
 export const addAttribute = (name) => async (dispatch) => {
     try {
-        const response = await privateRequest.post("/admin/attributes", {name});
+        const response = await privateRequest.post("/admin/attributes", { name });
         handleApiSuccess(dispatch, "Attribute has been added!");
         return response;
     } catch (error) {
@@ -164,7 +164,7 @@ export const addAttribute = (name) => async (dispatch) => {
 
 export const addAttributeValue = (attributeId, value) => async (dispatch) => {
     try {
-        const response = await privateRequest.post("/admin/attributes/values/" + attributeId, {value});
+        const response = await privateRequest.post("/admin/attributes/values/" + attributeId, { value });
         handleApiSuccess(dispatch, "Attribute value has been added!");
         return response;
     } catch (error) {
@@ -188,12 +188,20 @@ export const getNewArrivals = () => async (dispatch) => {
     }
 }
 
+export const getBestSellers = () => async (dispatch) => {
+    try {
+        return await publicRequest.get("/products/best-sellers?size=5");
+    } catch (error) {
+        handleApiError(dispatch, error, "Failed to get products");
+    }
+}
+
 export const filterProduct = (categories) => async (dispatch) => {
     try {
         const params = {};
         if (categories) params.categories = categories;
 
-        return await publicRequest.get("/products/filters", {params});
+        return await publicRequest.get("/products/filters", { params });
     } catch (error) {
         handleApiError(dispatch, error, "Failed to filter products");
     }
@@ -384,17 +392,17 @@ export const changeOrderStatus = (id, status) => async (dispatch) => {
 
 export const addItemToCart = (item) => async (dispatch) => {
     dispatch(addNew(item));
-    dispatch(addSuccess({message: "Product added to cart!", timestamp: new Date().getTime()}));
+    dispatch(addSuccess({ message: "Product added to cart!", timestamp: new Date().getTime() }));
 }
 
 export const removeCartItem = (item) => async (dispatch) => {
     dispatch(remove(item));
-    dispatch(addSuccess({message: "Product removed from cart!", timestamp: new Date().getTime()}));
+    dispatch(addSuccess({ message: "Product removed from cart!", timestamp: new Date().getTime() }));
 }
 
 export const updateCartItem = (quantity, item) => async (dispatch) => {
-    dispatch(editQuantity({old: item, quantity}));
-    dispatch(addSuccess({message: "Cart has been updated!", timestamp: new Date().getTime()}));
+    dispatch(editQuantity({ old: item, quantity }));
+    dispatch(addSuccess({ message: "Cart has been updated!", timestamp: new Date().getTime() }));
 }
 
 /**
@@ -462,17 +470,17 @@ export const cancelOrder = (id) => async (dispatch) => {
  */
 
 const handleApiSuccess = (dispatch, message) => {
-    dispatch(addSuccess({message: message, timestamp: new Date().getTime()}));
+    dispatch(addSuccess({ message: message, timestamp: new Date().getTime() }));
 }
 
 const handleApiError = (dispatch, error, defaultMessage) => {
     if (!error.response) {
-        dispatch(addError({message: "Server is busy, try again later!", timestamp: new Date().getTime()}));
+        dispatch(addError({ message: "Server is busy, try again later!", timestamp: new Date().getTime() }));
     } else if (error && error.response && error.response.data) {
         dispatch(addError(error.response.data));
     } else if (defaultMessage) {
-        dispatch(addError({message: defaultMessage, timestamp: new Date().getTime()}));
+        dispatch(addError({ message: defaultMessage, timestamp: new Date().getTime() }));
     } else {
-        dispatch(addError({message: "Server is busy, try again later!", timestamp: new Date().getTime()}));
+        dispatch(addError({ message: "Server is busy, try again later!", timestamp: new Date().getTime() }));
     }
 };
