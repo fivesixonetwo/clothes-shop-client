@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { addItem2Wishlist, addItemToCart, getProductDetail, getProfile, removeWishlistItem } from "../redux/apiCalls";
-import { Button, Divider, InputNumber, Select, Typography } from "antd";
+import { Button, Divider, InputNumber, Select, Typography, Tooltip } from "antd";
 import { BASE_URL } from "../helpers/axiosInstance";
 import { ShoppingCartOutlined } from "@ant-design/icons";
 import { FavoriteBorderOutlined } from "@material-ui/icons";
@@ -106,7 +106,7 @@ const ProductDetails = () => {
     const [quantity, setQuantity] = useState(1);
     const [selectedVariant, setSelectedVariant] = useState({});
 
-    const { profile } = useSelector((state) => state.user);
+    const { profile, currentUser } = useSelector((state) => state.user);
 
     const history = useHistory();
 
@@ -152,8 +152,10 @@ const ProductDetails = () => {
     }
 
     useEffect(() => {
-        dispatch(getProfile());
-    }, [dispatch]);
+        if (currentUser) {
+            dispatch(getProfile());
+        }
+    }, [dispatch, currentUser]);
 
     const onConfirmDelete = () => {
         const deleteId = profile.wishlist.find(i => i.product.id === +id)
@@ -248,19 +250,21 @@ const ProductDetails = () => {
                             </Button>
                             <Button disabled={selectedVariant['stock'] === 0} onClick={onClickBuyNow} type="primary"
                                 danger>Buy Now</Button>
-                            {
-                                profile
-                                    ?
-                                    <>
-                                        {
-                                            profile.wishlist.find(i => i.product.id === +id)
-                                                ? <FavoriteIcon color='error' onClick={onConfirmDelete} />
-                                                : <FavoriteBorderOutlined onClick={onClickAdd2Favorite} />
-                                        }
-                                    </>
-                                    :
-                                    <FavoriteBorderOutlined onClick={onClickAdd2Favorite} />
-                            }
+                            <Tooltip title={"Add to Wishlist"}>
+                                {
+                                    profile
+                                        ?
+                                        <>
+                                            {
+                                                profile.wishlist.find(i => i.product.id === +id)
+                                                    ? <FavoriteIcon cursor="pointer" sytle={{ cursor: 'pointer' }} color='error' onClick={onConfirmDelete} />
+                                                    : <FavoriteBorderOutlined cursor="pointer" sytle={{ cursor: 'pointer' }} onClick={onClickAdd2Favorite} />
+                                            }
+                                        </>
+                                        :
+                                        <FavoriteBorderOutlined cursor="pointer" onClick={onClickAdd2Favorite} />
+                                }
+                            </Tooltip>
                         </div>
                     </QuantityInput>
                 </ProductInfo>

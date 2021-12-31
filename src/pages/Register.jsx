@@ -52,9 +52,11 @@ const Register = () => {
 
     const dispatch = useDispatch();
     const history = useHistory();
+    const [form] = Form.useForm();
 
     const clickRegister = (values) => {
         dispatch(register(values));
+        form.resetFields();
     }
 
     return (
@@ -64,6 +66,7 @@ const Register = () => {
                     <CustomTitle>CREATE AN ACCOUNT</CustomTitle>
                 </Title>
                 <Form
+                form={form}
                     {...formItemLayout}
                     name="login_form"
                     onFinish={clickRegister}

@@ -182,7 +182,7 @@ export const getProducts = () => async (dispatch) => {
 
 export const getNewArrivals = () => async (dispatch) => {
     try {
-        return await publicRequest.get("/products/new-arrivals?size=5");
+        return await publicRequest.get("/products/new-arrivals?size=4");
     } catch (error) {
         handleApiError(dispatch, error, "Failed to get products");
     }
@@ -190,7 +190,7 @@ export const getNewArrivals = () => async (dispatch) => {
 
 export const getBestSellers = () => async (dispatch) => {
     try {
-        return await publicRequest.get("/products/best-sellers?size=5");
+        return await publicRequest.get("/products/best-sellers?size=4");
     } catch (error) {
         handleApiError(dispatch, error, "Failed to get products");
     }

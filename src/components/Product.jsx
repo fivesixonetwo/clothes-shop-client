@@ -56,11 +56,13 @@ const Product = ({item}) => {
     const dispatch = useDispatch();
     const history = useHistory();
 
-    const { profile } = useSelector((state) => state.user);
-    
+    const {profile, currentUser} = useSelector((state) => state.user);
+ 
     useEffect(() => {
+        if(currentUser){
          dispatch(getProfile());
-    }, [dispatch]);
+        }
+    }, [currentUser, dispatch]);
     
    
     const getThumbnail = () => {

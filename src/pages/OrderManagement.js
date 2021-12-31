@@ -1,13 +1,16 @@
 import styled from "styled-components";
-import {useDispatch} from "react-redux";
-import {useEffect, useState} from "react";
-import {changeOrderStatus, getAllOrder} from "../redux/apiCalls";
-import {Button, Image, Space, Table, Tooltip, Typography} from "antd";
+import { useDispatch } from "react-redux";
+import { useEffect, useState } from "react";
+import { changeOrderStatus, getAllOrder } from "../redux/apiCalls";
+import { Button, Image, Space, Table, Tooltip, Typography } from "antd";
 import EditIcon from '@mui/icons-material/Edit';
-import {BASE_URL} from "../helpers/axiosInstance";
+import { BASE_URL } from "../helpers/axiosInstance";
 import OrderStatusDialog from "../components/OrderStatusDialog";
 
-const {Text} = Typography;
+import { removeVietnameseTones } from '../helpers/utils';
+import useSearchTable from '../hooks/useSearchTable';
+
+const { Text } = Typography;
 
 const Container = styled.div`
   display: flex;
@@ -26,6 +29,8 @@ const OrderManagement = () => {
     const [orders, setOrders] = useState([]);
     const [orderStatusVisible, setOrderStatusVisible] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
+
+    const { getColumnSearchProps } = useSearchTable();
 
     useEffect(() => {
         refreshOrder();
@@ -61,16 +66,16 @@ const OrderManagement = () => {
                         <Image
                             height={45}
                             width={45}
-                            style={{cursor: "pointer"}}
+                            style={{ cursor: "pointer" }}
                             preview={true}
                             src={BASE_URL + "products/images/" + thumbnail.url}
                         />
-                        <h4 style={{cursor: "pointer"}}>{product.name}</h4>
+                        <h4 style={{ cursor: "pointer" }}>{product.name}</h4>
                     </Space>
                 )
             }
         },
-        {title: 'Variant', dataIndex: ["variant", 'variantString'], key: 'variantString', width: 200},
+        { title: 'Variant', dataIndex: ["variant", 'variantString'], key: 'variantString', width: 200 },
         {
             title: 'Quantity',
             dataIndex: 'quantity',
@@ -94,7 +99,7 @@ const OrderManagement = () => {
             render: (value, record) => {
                 const subTotal = record.quantity * record.unitPrice;
                 return (
-                    <Text style={{color: "#ee4d2d"}} strong>${subTotal}</Text>
+                    <Text style={{ color: "#ee4d2d" }} strong>${subTotal}</Text>
                 )
             }
         }
@@ -102,19 +107,19 @@ const OrderManagement = () => {
 
     const nestedRowRenderer = (record) => {
         return (
-            <Space key={record.id} style={{display: "flex", flex: 1}} direction={"vertical"} size={"middle"}>
+            <Space key={record.id} style={{ display: "flex", flex: 1 }} direction={"vertical"} size={"middle"}>
                 <AddressItem key={record.id}>
-                    <span style={{display: "flex"}}><Text
+                    <span style={{ display: "flex" }}><Text
                         type="secondary"
-                        style={{marginRight: 5}}>Shipping Address: </Text><h4>{record.name}</h4></span>
+                        style={{ marginRight: 5 }}>Shipping Address: </Text><h4>{record.name}</h4></span>
                     <span><Text
                         type="secondary"
-                        style={{marginRight: 5}}>Address: </Text>{record.address} - {record.ward} - {record.district} - {record.city}</span>
-                    <span><Text style={{marginRight: 5}}
-                                type="secondary">Phone number: </Text>{record.phoneNumber}</span>
+                        style={{ marginRight: 5 }}>Address: </Text>{record.address} - {record.ward} - {record.district} - {record.city}</span>
+                    <span><Text style={{ marginRight: 5 }}
+                        type="secondary">Phone number: </Text>{record.phoneNumber}</span>
                 </AddressItem>
-                <Table rowKey={record.id} locale={{emptyText: "No Items"}} size={"small"}
-                       columns={orderItemColumns} pagination={false} dataSource={record.orderItems}/>
+                <Table rowKey={record.id} locale={{ emptyText: "No Items" }} size={"small"}
+                    columns={orderItemColumns} pagination={false} dataSource={record.orderItems} />
             </Space>
         )
     }
@@ -151,7 +156,7 @@ const OrderManagement = () => {
             key: 'total',
             render: (value, record) => {
                 return (
-                    <Text style={{color: "#ee4d2d"}} strong>${value}</Text>
+                    <Text style={{ color: "#ee4d2d" }} strong>${value}</Text>
                 )
             }
         },
@@ -161,6 +166,13 @@ const OrderManagement = () => {
             align: "right",
             dataIndex: 'orderStatus',
             key: 'orderStatus',
+            ...getColumnSearchProps('orderStatus'),
+            sorter: (a, b) => {
+                if (removeVietnameseTones(a.orderStatus.slice(0, 1)) < removeVietnameseTones(b.orderStatus.slice(0, 1))) { return -1; }
+                if (removeVietnameseTones(a.orderStatus.slice(0, 1)) > removeVietnameseTones(b.orderStatus.slice(0, 1))) { return 1; }
+                return 0;
+            },
+            sortDirections: ['ascend', 'descend'],
         },
         {
             title: 'Action',
@@ -173,7 +185,7 @@ const OrderManagement = () => {
                     <Button
                         onClick={() => onBeingChange(record.id)}
                         type="text" shape={"default"}
-                        icon={<EditIcon fontSize={"small"}/>}/>
+                        icon={<EditIcon fontSize={"small"} />} />
                 </Tooltip>
             ),
         }
@@ -182,14 +194,14 @@ const OrderManagement = () => {
     return (
         <Container>
             <Table pagination={false}
-                   style={{flex: 1}}
-                   rowKey={"id"}
-                   expandable={{expandedRowRender: nestedRowRenderer}}
-                   dataSource={orders}
-                   columns={columns}/>
+                style={{ flex: 1 }}
+                rowKey={"id"}
+                expandable={{ expandedRowRender: nestedRowRenderer }}
+                dataSource={orders}
+                columns={columns} />
             <OrderStatusDialog visible={orderStatusVisible}
-                               onOk={onOk}
-                               onCancel={() => setOrderStatusVisible(false)}/>
+                onOk={onOk}
+                onCancel={() => setOrderStatusVisible(false)} />
         </Container>
     );
 };

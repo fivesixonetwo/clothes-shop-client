@@ -1,9 +1,9 @@
 import styled from "styled-components";
-import {Badge, Button, Image, List, Popconfirm, Space, Table, Tooltip, Typography} from "antd";
-import {PlusOutlined} from "@ant-design/icons";
-import {useEffect, useState} from "react";
+import { Badge, Button, Image, List, Popconfirm, Space, Table, Tooltip, Typography } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
+import { useEffect, useState } from "react";
 import ProductForm from "../components/ProductForm";
-import {useDispatch} from "react-redux";
+import { useDispatch } from "react-redux";
 import {
     addProduct,
     addProductVariant,
@@ -14,16 +14,21 @@ import {
     updateProduct,
     updateProductVariant
 } from "../redux/apiCalls";
-import {BASE_URL} from "../helpers/axiosInstance";
+import { BASE_URL } from "../helpers/axiosInstance";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PublishIcon from '@mui/icons-material/Publish';
-import {getReadableSpecifications} from "../helpers/utils";
+import { getReadableSpecifications } from "../helpers/utils";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import VariantForm from "../components/VariantForm";
 import CurrencyFormat from "react-currency-format";
 
-const {Text} = Typography;
+import useSearchTable from '../hooks/useSearchTable';
+
+
+import { removeVietnameseTones } from '../helpers/utils';
+
+const { Text } = Typography;
 
 
 const Container = styled.div`
@@ -48,10 +53,15 @@ const ProductManagement = () => {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [selectedVariant, setSelectedVariant] = useState(null);
 
+    //Search
+    const { getColumnSearchProps } = useSearchTable();
+
+
     useEffect(() => {
         refreshProducts();
     }, []);
 
+    console.log(products)
     const refreshProducts = () => {
         dispatch(getProducts()).then((r) => {
             setProducts(r.data);
@@ -80,12 +90,17 @@ const ProductManagement = () => {
         setProductFormVisible(true);
     }
 
+    //Search
+
+
     const generalProductColumns = [
         {
             title: 'ID',
             dataIndex: 'id',
             key: 'id',
             width: 50,
+            sorter: (a, b) => a.id - b.id,
+            sortDirections: ['ascend', 'descend'],
         },
         {
             title: 'Thumbnail',
@@ -99,8 +114,8 @@ const ProductManagement = () => {
                         fallback="data:image/png;base64,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"
                         width={48}
                         height={48}
-                        style={{objectFit: "contain"}}
-                        src={BASE_URL + "products/images/" + thumbnail.url}/>
+                        style={{ objectFit: "contain" }}
+                        src={BASE_URL + "products/images/" + thumbnail.url} />
                 )
             }
         },
@@ -108,12 +123,25 @@ const ProductManagement = () => {
             title: 'Name',
             dataIndex: 'name',
             key: 'name',
+            ...getColumnSearchProps('name'),
+            sorter: (a, b) => {
+                if (removeVietnameseTones(a.name.slice(0, 1)) < removeVietnameseTones(b.name.slice(0, 1))) { return -1; }
+                if (removeVietnameseTones(a.name.slice(0, 1)) > removeVietnameseTones(b.name.slice(0, 1))) { return 1; }
+                return 0;
+            },
+            sortDirections: ['ascend', 'descend'],
         },
         {
             title: 'Category',
             dataIndex: ["category", "name"],
             width: 150,
-            key: 'category'
+            key: 'category',
+            sorter: (a, b) => {
+                if (removeVietnameseTones(a.category.name.slice(0, 1)) < removeVietnameseTones(b.category.name.slice(0, 1))) { return -1; }
+                if (removeVietnameseTones(a.category.name.slice(0, 1)) > removeVietnameseTones(b.category.name.slice(0, 1))) { return 1; }
+                return 0;
+            },
+            sortDirections: ['ascend', 'descend'],
         },
         {
             title: 'Status',
@@ -122,7 +150,7 @@ const ProductManagement = () => {
             key: 'published',
             render: (published, record) => (
                 <span>
-                    <Badge status={published ? "success" : "error"}/>
+                    <Badge status={published ? "success" : "error"} />
                     {record.deleted ? "Deleted" : published ? "Published" : "Unpublished"}
                 </span>
             ),
@@ -151,28 +179,28 @@ const ProductManagement = () => {
             key: 'action',
             render: (value, record) => (
                 <Space size="small">
-                    <Tooltip title="Edit" overlayInnerStyle={{fontSize: 12}}>
+                    <Tooltip title="Edit" overlayInnerStyle={{ fontSize: 12 }}>
                         <Button disabled={record.deleted} type="text" shape={"default"}
-                                icon={<EditIcon onClick={() => onClickEditProduct(record)} fontSize={"small"}/>}/>
+                            icon={<EditIcon onClick={() => onClickEditProduct(record)} fontSize={"small"} />} />
                     </Tooltip>
                     <Popconfirm disabled={record.deleted}
-                                title="Are you sure to delete this product?"
-                                okText="Yes"
-                                onConfirm={() => onDeleteProduct(record)}
-                                cancelText="No"
+                        title="Are you sure to delete this product?"
+                        okText="Yes"
+                        onConfirm={() => onDeleteProduct(record)}
+                        cancelText="No"
                     >
                         <Button disabled={record.deleted} type="text" shape={"default"}
-                                icon={<DeleteIcon sx={{color: "red"}} fontSize={"small"}/>}/>
+                            icon={<DeleteIcon sx={{ color: "red" }} fontSize={"small"} />} />
                     </Popconfirm>
-                    <Tooltip title="Publish" overlayInnerStyle={{fontSize: 12}}>
+                    <Tooltip title="Publish" overlayInnerStyle={{ fontSize: 12 }}>
                         <Button onClick={() => onPublishProduct(record)} disabled={record.deleted} type="text"
-                                shape={"default"}
-                                icon={<PublishIcon color={"primary"} fontSize={"small"}/>}/>
+                            shape={"default"}
+                            icon={<PublishIcon color={"primary"} fontSize={"small"} />} />
                     </Tooltip>
-                    <Tooltip title="Add Variant" overlayInnerStyle={{fontSize: 12}}>
+                    <Tooltip title="Add Variant" overlayInnerStyle={{ fontSize: 12 }}>
                         <Button onClick={() => onPrepareAddVariant(record)} disabled={record.deleted} type="text"
-                                shape={"default"}
-                                icon={<AddBoxIcon color={"primary"} fontSize={"small"}/>}/>
+                            shape={"default"}
+                            icon={<AddBoxIcon color={"primary"} fontSize={"small"} />} />
                     </Tooltip>
                 </Space>
             ),
@@ -221,9 +249,9 @@ const ProductManagement = () => {
     }
 
     const variantColumns = [
-        {title: 'Name', dataIndex: 'variantName', key: 'variantName'},
-        {title: 'Variant', dataIndex: 'variantString', key: 'variantString', width: 250},
-        {title: 'Stock', dataIndex: 'stock', key: 'stock', width: 100},
+        { title: 'Name', dataIndex: 'variantName', key: 'variantName' },
+        { title: 'Variant', dataIndex: 'variantString', key: 'variantString', width: 250 },
+        { title: 'Stock', dataIndex: 'stock', key: 'stock', width: 100 },
         {
             title: 'Cost',
             dataIndex: 'cost',
@@ -231,7 +259,7 @@ const ProductManagement = () => {
             key: 'cost',
             align: "right",
             render: (value) => <CurrencyFormat decimalScale={0} prefix={"$"} value={value} displayType={'text'}
-                                               thousandSeparator={true}/>
+                thousandSeparator={true} />
         },
         {
             title: 'Price',
@@ -240,7 +268,7 @@ const ProductManagement = () => {
             dataIndex: 'price',
             key: 'price',
             render: (value) => <CurrencyFormat decimalScale={0} prefix={"$"} value={value} displayType={'text'}
-                                               thousandSeparator={true}/>
+                thousandSeparator={true} />
         },
         {
             title: 'Actions',
@@ -251,13 +279,13 @@ const ProductManagement = () => {
             render: (value, record) => (
                 <Space size="small">
                     <Button type="text" shape={"default"} size={"small"}
-                            icon={<EditIcon onClick={() => onPrepareEditVariant(record)} fontSize={"small"}/>}/>
+                        icon={<EditIcon onClick={() => onPrepareEditVariant(record)} fontSize={"small"} />} />
                     <Popconfirm title="Are you sure to delete this variant?"
-                                okText="Yes"
-                                onConfirm={() => onDeleteVariant(record)}
-                                cancelText="No"
+                        okText="Yes"
+                        onConfirm={() => onDeleteVariant(record)}
+                        cancelText="No"
                     ><Button type="text" danger shape={"default"} size={"small"}
-                             icon={<DeleteIcon fontSize={"small"}/>}/></Popconfirm>
+                        icon={<DeleteIcon fontSize={"small"} />} /></Popconfirm>
                 </Space>
             ),
         },
@@ -266,25 +294,25 @@ const ProductManagement = () => {
     const nestedRowRenderer = (record) => {
         const readableSpec = getReadableSpecifications(record['specifications']);
         return (
-            <Space key={record.id} style={{display: "flex", flex: 1}} direction={"vertical"} size={"middle"}>
+            <Space key={record.id} style={{ display: "flex", flex: 1 }} direction={"vertical"} size={"middle"}>
                 <div>
                     <span><Text type="secondary">Descriptions: </Text>{record.description}</span>
                 </div>
                 <div>
                     <List
-                        style={{flex: 1}}
+                        style={{ flex: 1 }}
                         size="small"
                         header={<b>Specifications</b>}
                         dataSource={readableSpec}
-                        locale={{emptyText: "No specifications"}}
+                        locale={{ emptyText: "No specifications" }}
                         renderItem={item => <List.Item>
                             <span key={item.key}>{item.key}: {item.values}</span>
                         </List.Item>}
                     />
                 </div>
                 <h4>Variants:</h4>
-                <Table locale={{emptyText: "No variants"}} size={"small"} columns={variantColumns} pagination={false}
-                       dataSource={record.variants}/>
+                <Table locale={{ emptyText: "No variants" }} size={"small"} columns={variantColumns} pagination={false}
+                    dataSource={record.variants} />
             </Space>
         )
     }
@@ -293,23 +321,23 @@ const ProductManagement = () => {
     return (
         <Container>
             <Actions>
-                <Button onClick={onClickAddNewProduct} type="primary" icon={<PlusOutlined/>}>
+                <Button onClick={onClickAddNewProduct} type="primary" icon={<PlusOutlined />}>
                     Add New
                 </Button>
             </Actions>
-            <Table style={{flex: 1}}
-                   rowKey={"id"}
-                   dataSource={products}
-                   expandable={{expandedRowRender: nestedRowRenderer}}
-                   columns={generalProductColumns}/>
+            <Table style={{ flex: 1 }}
+                rowKey={"id"}
+                dataSource={products}
+                expandable={{ expandedRowRender: nestedRowRenderer }}
+                columns={generalProductColumns} />
             <ProductForm visible={productFormVisible}
-                         initialValue={selectedProduct}
-                         onCreate={onSubmitProductForm}
-                         onCancel={() => setProductFormVisible(false)}/>
+                initialValue={selectedProduct}
+                onCreate={onSubmitProductForm}
+                onCancel={() => setProductFormVisible(false)} />
             <VariantForm visible={productVariantFormVisible}
-                         initialValue={selectedVariant}
-                         onCreate={onCreateVariant}
-                         onCancel={() => setProductVariantFormVisible(false)}/>
+                initialValue={selectedVariant}
+                onCreate={onCreateVariant}
+                onCancel={() => setProductVariantFormVisible(false)} />
         </Container>
     );
 };
