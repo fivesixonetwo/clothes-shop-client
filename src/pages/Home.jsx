@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import {useEffect, useState} from "react";
 import {useDispatch} from "react-redux";
-import {getNewArrivals} from "../redux/apiCalls";
+import {getNewArrivals, getBestSellers} from "../redux/apiCalls";
 import Product from "../components/Product";
 
 const Container = styled.div`
@@ -38,11 +38,17 @@ const Home = () => {
 
     const dispatch = useDispatch();
     const [newArrivals, setNewArrivals] = useState([]);
-    const [bestSeller, setBestSeller] = useState([]);
+    const [bestSellers, setBestSellers] = useState([]);
 
     useEffect(() => {
         dispatch(getNewArrivals()).then((res) => {
             setNewArrivals((res && res.data) || []);
+        });
+    }, []);
+
+    useEffect(() => {
+        dispatch(getBestSellers()).then((res) => {
+            setBestSellers((res && res.data) || []);
         });
     }, []);
 
@@ -61,7 +67,7 @@ const Home = () => {
                     <Title>BEST SELLERS</Title>
                 </div>
                 <ProductContainer>
-                    {newArrivals.map((item) => <Product item={item} key={item.id}/>)}
+                    {bestSellers.map((item) => <Product item={item} key={item.id}/>)}
                 </ProductContainer>
             </Section>
         </Container>
