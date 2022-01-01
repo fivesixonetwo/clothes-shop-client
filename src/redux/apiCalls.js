@@ -162,6 +162,17 @@ export const addAttribute = (name) => async (dispatch) => {
     }
 }
 
+export const updateAttribute = (id, name) => async (dispatch) => {
+    try {
+        const response = await privateRequest.patch(`/admin/attributes/${id}`, { name });
+        handleApiSuccess(dispatch, "Successfully update attribute");
+        return response;
+    }
+    catch (err) {
+        handleApiError(dispatch, err, "Failed to update attribute");
+    }
+}
+
 export const addAttributeValue = (attributeId, value) => async (dispatch) => {
     try {
         const response = await privateRequest.post("/admin/attributes/values/" + attributeId, { value });
@@ -169,6 +180,17 @@ export const addAttributeValue = (attributeId, value) => async (dispatch) => {
         return response;
     } catch (error) {
         handleApiError(dispatch, error, "Failed to add attribute value");
+    }
+}
+
+export const updateAttributeValue = (id, value) => async (dispatch) => {
+    try {
+        const response = await privateRequest.patch(`/admin/attributes/values/${id}`, { value });
+        handleApiSuccess(dispatch, "Successfully update attribute value");
+        return response;
+    }
+    catch (err) {
+        handleApiError(dispatch, err, "Failed to update attribute value");
     }
 }
 

@@ -1,10 +1,13 @@
 :root {
-    --bgPrimary: #fff;
-    --bgSecondary: #f1f1f1;
+  --bgPrimary: #fff;
+  --bgSecondary: #f1f1f1;
 }
 
-input[type='text'], input[type='password'], input[type='number'], textarea {
-    -webkit-appearance: unset !important;
+input[type="text"],
+input[type="password"],
+input[type="number"],
+textarea {
+  -webkit-appearance: unset !important;
 }
 
 h1,
@@ -13,19 +16,23 @@ h3,
 h4,
 h5,
 h6 {
-    margin-bottom: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 p {
-    margin-top: 0;
-    margin-bottom: 0 !important;
+  margin-top: 0;
+  margin-bottom: 0 !important;
 }
 
 #login_form .LoginButton {
-    margin-bottom: 0px !important;
+  margin-bottom: 0px !important;
 }
 
 .ant-checkbox-wrapper + .ant-checkbox-wrapper {
-    margin-left: 0 !important;
-    margin-top: 8px;
+  margin-left: 0 !important;
+  margin-top: 8px;
+}
+
+.edit-icon {
+  margin-right: 8px;
 }
