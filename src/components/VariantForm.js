@@ -19,6 +19,7 @@ const VariantForm = ({ visible, onCreate, onCancel, initialValue }) => {
     const [selectedAttributeName, setSelectedAttributeName] = useState(0);
     const [deletedGalleries, setDeletedGalleries] = useState([]);
 
+    //Edit attribute form
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editAttribute, setEditAttribute] = useState({});
     const [toggleAttribute, setToggleAttribute] = useState(true);
@@ -120,6 +121,7 @@ const VariantForm = ({ visible, onCreate, onCancel, initialValue }) => {
         return defaultValue;
     }
 
+    //Edit attribute form
     const showModal = () => {
         setIsModalVisible(true);
     };
@@ -263,7 +265,7 @@ const VariantForm = ({ visible, onCreate, onCancel, initialValue }) => {
                                                         </div>
                                                     )}>
                                                     {attribute.attributes.map(c => <Option key={c.id}
-                                                        value={c.id}><Tooltip title={c.name}><EditOutlined className="edit-icon" mx="160px" onClick={() => handleEditAttribute(c.id, c.name)} />{c.name}</Tooltip></Option>)}
+                                                        value={c.id}><Tooltip title={c.name}><EditOutlined className="edit-icon" onClick={() => handleEditAttribute(c.id, c.name)} />{c.name}</Tooltip></Option>)}
                                                 </Select>
                                             </Form.Item>
                                             <Form.Item
@@ -296,7 +298,7 @@ const VariantForm = ({ visible, onCreate, onCancel, initialValue }) => {
                                                 )}>
                                                     {([].concat(attribute.attributeValues[initialValue && initialValue.id ? getInitialValue(field, selectedAttributeName) : selectedAttributeName] || [])).map(c =>
                                                         <Option key={c.id}
-                                                            value={c.id}><Tooltip title={c.value}><EditOutlined className="edit-icon" mx="160px" onClick={() => handleEditAttributeValue(c.id, c.value)} />{c.value}</Tooltip></Option>)}
+                                                            value={c.id}><Tooltip title={c.value}><EditOutlined className="edit-icon" onClick={() => handleEditAttributeValue(c.id, c.value)} />{c.value}</Tooltip></Option>)}
                                                 </Select>
                                             </Form.Item>
 
