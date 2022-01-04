@@ -1,13 +1,13 @@
 import styled from "styled-components";
-import {Button, Checkbox, Divider, Typography} from "antd";
-import {useEffect, useState} from "react";
-import {useDispatch} from "react-redux";
-import {filterProduct, getCategories} from "../redux/apiCalls";
+import { Button, Checkbox, Divider, Typography } from "antd";
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { filterProduct, getCategories, searchProduct } from "../redux/apiCalls";
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import Product from "../components/Product";
-import {useLocation} from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 
-const {Text} = Typography;
+const { Text } = Typography;
 const Container = styled.div`
   display: flex;
   flex: 1;
@@ -80,119 +80,136 @@ const CustomDivider = styled(Divider)`
 `
 
 function useQuery() {
-    return new URLSearchParams(useLocation().search);
+  return new URLSearchParams(useLocation().search);
 }
 
 const FilterProducts = () => {
 
-    let query = useQuery();
-    const dispatch = useDispatch();
+  let query = useQuery();
+  const param = useParams();
 
-    const [categories, setCategories] = useState([]);
-    const [productPageable, setProductPageable] = useState({content: []});
-    const [selectedCategories, setSelectedCategories] = useState([]);
+  const dispatch = useDispatch();
 
-    useEffect(() => {
-        dispatch(getCategories()).then((r) => {
-            if (r) {
-                setCategories(r.data);
-            }
-        });
-    }, []);
+  const [categories, setCategories] = useState([]);
+  const [productPageable, setProductPageable] = useState({ content: [] });
+  const [selectedCategories, setSelectedCategories] = useState([]);
 
-    useEffect(() => {
-        setSelectedCategories([]);
-        if (categories.length && query.get("category")) {
-            setSelectedCategories([].concat(parseInt(query.get("category"))));
-            const categories = [].concat(parseInt(query.get("category"))).join(",");
-            dispatch(filterProduct(categories)).then((r) => {
-                if (r) {
-                    setProductPageable(r.data);
-                }
-            });
+  useEffect(() => {
+    dispatch(getCategories()).then((r) => {
+      if (r) {
+        setCategories(r.data);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (param?.slug?.includes("key")) {
+      setProductPageable({ content: [] });
+      let keyword = param.slug.replace("key=", "");
+      dispatch(searchProduct(keyword === "products" ? "" : keyword)).then((r) => {
+        if (r) {
+          setProductPageable({
+            content: [].concat(r.data)
+          })
         }
-    }, [categories.length, query.get("category")]);
-
-    const onCategoriesChange = (v) => {
-        setSelectedCategories(v);
+      });
     }
 
-    const doFilterProduct = () => {
-        const categories = selectedCategories.join(",");
-        dispatch(filterProduct(categories)).then((r) => {
-            if (r) {
-                setProductPageable(r.data);
-            }
-        });
-    }
+  }, [param, dispatch]);
 
-    const onClearFilter = () => {
-        setSelectedCategories([]);
-        dispatch(filterProduct([])).then((r) => {
-            if (r) {
-                setProductPageable(r.data);
-            }
-        });
+  useEffect(() => {
+    setSelectedCategories([]);
+    if (categories.length && query.get("category")) {
+      setSelectedCategories([].concat(parseInt(query.get("category"))));
+      const categories = [].concat(parseInt(query.get("category"))).join(",");
+      dispatch(filterProduct(categories)).then((r) => {
+        if (r) {
+          setProductPageable(r.data);
+        }
+      });
     }
+  }, [categories.length, query.get("category")]);
 
-    const onApplyFilter = () => {
-        doFilterProduct();
-    }
+  const onCategoriesChange = (v) => {
+    setSelectedCategories(v);
+  }
 
-    return (<Container>
-        <Content>
-            <FilterContainer>
-                <FilterHeader>
-                    <div className={"Header"}>
-                        <FilterAltIcon fontSize={"small"}/>
-                        <h4>FILTER PRODUCT</h4>
-                    </div>
-                    <Button onClick={onClearFilter} type="link" size={"small"}>
-                        Clear
-                    </Button>
-                </FilterHeader>
-                <CustomDivider/>
-                <Text strong>By Category</Text>
-                <Checkbox.Group value={selectedCategories} onChange={onCategoriesChange}
-                                style={{display: "flex", flexDirection: "column", marginTop: 15}}>
-                    {categories.map((cate) => {
-                        return (<Checkbox key={cate.id} value={cate.id}>{cate.name}</Checkbox>)
-                    })}
-                </Checkbox.Group>
-                <CustomDivider/>
-                {/*<Text strong>Price Range</Text>*/}
-                {/*<Input.Group size={"default"} style={{display: "flex", flexDirection: "row", marginTop: 15}}>*/}
-                {/*    <InputNumber min={0} formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}*/}
-                {/*                 parser={value => value.replace(/\$\s?|(,*)/g, '')}*/}
-                {/*                 style={{flex: 1, textAlign: 'center'}}*/}
-                {/*                 controls={false}*/}
-                {/*                 placeholder="1"/>*/}
-                {/*    <Text style={{width: 30, display: "flex", justifyContent: "center", alignItems: "center"}}*/}
-                {/*          strong> - </Text>*/}
-                {/*    <InputNumber*/}
-                {/*        placeholder={"$2"}*/}
-                {/*        min={0}*/}
-                {/*        formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}*/}
-                {/*        parser={value => value.replace(/\$\s?|(,*)/g, '')}*/}
-                {/*        style={{*/}
-                {/*            flex: 1, textAlign: 'center',*/}
-                {/*        }}*/}
-                {/*        controls={false}*/}
-                {/*    />*/}
-                {/*</Input.Group>*/}
-                <Button onClick={onApplyFilter} style={{marginTop: 20}} danger block type="primary">APPLY
-                    FILTER</Button>
-            </FilterContainer>
-            <ProductListContainer>
-                <SortHeader>
-                    <span>Showing <b>{productPageable.totalElements || 0}</b> of <b>{productPageable.totalElements || 0}</b> Products</span>
-                </SortHeader>
-                <ProductsContainer>
-                    {productPageable.content.map((item) => <Product item={item} key={item.id}/>)}
-                </ProductsContainer>
-            </ProductListContainer>
-        </Content>
-    </Container>);
+  const doFilterProduct = () => {
+    const categories = selectedCategories.join(",");
+    dispatch(filterProduct(categories)).then((r) => {
+      if (r) {
+        setProductPageable(r.data);
+      }
+    });
+  }
+
+  const onClearFilter = () => {
+    setSelectedCategories([]);
+    dispatch(filterProduct([])).then((r) => {
+      if (r) {
+        setProductPageable(r.data);
+      }
+    });
+  }
+
+  const onApplyFilter = () => {
+    doFilterProduct();
+  }
+
+  return (<Container>
+    <Content>
+      <FilterContainer>
+        <FilterHeader>
+          <div className={"Header"}>
+            <FilterAltIcon fontSize={"small"} />
+            <h4>FILTER PRODUCT</h4>
+          </div>
+          <Button onClick={onClearFilter} type="link" size={"small"}>
+            Clear
+          </Button>
+        </FilterHeader>
+        <CustomDivider />
+        <Text strong>By Category</Text>
+        <Checkbox.Group value={selectedCategories} onChange={onCategoriesChange}
+          style={{ display: "flex", flexDirection: "column", marginTop: 15 }}>
+          {categories.map((cate) => {
+            return (<Checkbox key={cate.id} value={cate.id}>{cate.name}</Checkbox>)
+          })}
+        </Checkbox.Group>
+        <CustomDivider />
+        {/*<Text strong>Price Range</Text>*/}
+        {/*<Input.Group size={"default"} style={{display: "flex", flexDirection: "row", marginTop: 15}}>*/}
+        {/*    <InputNumber min={0} formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}*/}
+        {/*                 parser={value => value.replace(/\$\s?|(,*)/g, '')}*/}
+        {/*                 style={{flex: 1, textAlign: 'center'}}*/}
+        {/*                 controls={false}*/}
+        {/*                 placeholder="1"/>*/}
+        {/*    <Text style={{width: 30, display: "flex", justifyContent: "center", alignItems: "center"}}*/}
+        {/*          strong> - </Text>*/}
+        {/*    <InputNumber*/}
+        {/*        placeholder={"$2"}*/}
+        {/*        min={0}*/}
+        {/*        formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}*/}
+        {/*        parser={value => value.replace(/\$\s?|(,*)/g, '')}*/}
+        {/*        style={{*/}
+        {/*            flex: 1, textAlign: 'center',*/}
+        {/*        }}*/}
+        {/*        controls={false}*/}
+        {/*    />*/}
+        {/*</Input.Group>*/}
+        <Button onClick={onApplyFilter} style={{ marginTop: 20 }} danger block type="primary">APPLY
+          FILTER</Button>
+      </FilterContainer>
+      <ProductListContainer>
+        <SortHeader>
+          <span>Showing <b>{productPageable.totalElements || productPageable.content.length || 0}</b> of <b>{productPageable.totalElements || productPageable.content.length || 0}</b> Products</span>
+        </SortHeader>
+        <ProductsContainer>
+          {productPageable.content.map((item) => <Product item={item} key={item.id} />)}
+        </ProductsContainer>
+      </ProductListContainer>
+    </Content>
+  </Container>);
 };
 
 export default FilterProducts;

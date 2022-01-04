@@ -218,7 +218,7 @@ const VariantForm = ({ visible, onCreate, onCancel, initialValue }) => {
                                 initialValue={initialValue ? initialValue['stock'] : 1}
                                 required
                                 rules={[{ required: true, message: 'Please input stock!' }]}>
-                                <InputNumber min={1} />
+                                <InputNumber min={0} />
                             </Form.Item>
                         </Space>
                     </Form.Item>

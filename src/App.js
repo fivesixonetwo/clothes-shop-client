@@ -63,7 +63,9 @@ function App() {
                         <PrivateRoute exact path="/checkout" component={Checkout} />
                         <PrivateRoute exact path="/checkout-success" component={SuccessCheckout} />
                         <PrivateRoute exact path="/admin" component={BaseAdmin} />
-                        <Route path={"/products/:id"} component={ProductDetails} />
+                        <Route exact path={"/products/:id"} component={ProductDetails} />
+                        <Route exact path={"/products"} component={FilterProducts} />
+                        <Route exact path={"/products/find/:slug"} component={FilterProducts} />
                         <Route path="/login">
                             {currentUser ? <Redirect to="/" /> : <Login />}
                         </Route>

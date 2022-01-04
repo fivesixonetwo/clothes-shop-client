@@ -1,9 +1,9 @@
 import styled from "styled-components";
-import {Avatar, Popconfirm, Switch, Table, Tag} from "antd";
-import {useEffect, useState} from "react";
-import {useDispatch} from "react-redux";
-import {UserOutlined} from "@ant-design/icons";
-import {getUsers, toggleUserStatus} from "../redux/apiCalls";
+import { Avatar, Popconfirm, Switch, Table, Tag } from "antd";
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { UserOutlined } from "@ant-design/icons";
+import { getUsers, toggleUserStatus } from "../redux/apiCalls";
 
 const Container = styled.div`
   display: flex;
@@ -42,7 +42,7 @@ const UserManagement = () => {
             width: 150,
             render: (avatar) => {
                 return (
-                    <Avatar style={{backgroundColor: '#87d068'}} size={32} icon={<UserOutlined/>}/>
+                    <Avatar style={{ backgroundColor: '#87d068' }} size={32} icon={<UserOutlined />} />
                 )
             }
         },
@@ -74,16 +74,16 @@ const UserManagement = () => {
             width: 150,
             render: (enabled, record) => {
                 return <Popconfirm disabled={record.role === "ROLE_ADMIN"}
-                                   title={"Are you sure you want to " + (enabled ? "disable" : "enable") + " this user?"}
-                                   okText="Yes"
-                                   onConfirm={() => onToggleUserStatus(record)}
-                                   cancelText="No"
+                    title={"Are you sure you want to " + (enabled ? "disable" : "enable") + " this user?"}
+                    okText="Yes"
+                    onConfirm={() => onToggleUserStatus(record)}
+                    cancelText="No"
                 >
                     <Switch
                         checked={enabled}
                         disabled={record.role === "ROLE_ADMIN"}
                         checkedChildren="Enabled"
-                        unCheckedChildren="Disabled"/>
+                        unCheckedChildren="Disabled" />
                 </Popconfirm>
             }
         },
@@ -94,13 +94,12 @@ const UserManagement = () => {
             key: 'createdAt',
         }
     ];
-
     return (
         <Container>
-            <Table style={{flex: 1}}
-                   rowKey={"id"}
-                   dataSource={users}
-                   columns={userColumns}/>
+            <Table style={{ flex: 1 }}
+                rowKey={"id"}
+                dataSource={users.filter(user => user.role !== 'ROLE_ADMIN')}
+                columns={userColumns} />
         </Container>
     );
 };

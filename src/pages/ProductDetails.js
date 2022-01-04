@@ -176,9 +176,12 @@ const ProductDetails = () => {
             return;
         }
         if (product.variants) {
-            product.selectedVariant = selectedVariant;
-            product.quantity = quantity;
-            dispatch(addItemToCart(product));
+            const p = {
+                ...product,
+                selectedVariant,
+                quantity
+            }
+            dispatch(addItemToCart(p));
         }
     }
 
@@ -196,10 +199,15 @@ const ProductDetails = () => {
             return;
         }
         if (product.variants) {
-            product.selectedVariant = selectedVariant;
-            product.quantity = quantity;
-            dispatch(addItemToCart(product)).then(() => {
-                history.push("/checkout");
+            const p = {
+                ...product,
+                selectedVariant,
+                quantity
+            }
+            // product.selectedVariant = selectedVariant;
+            // product.quantity = quantity;
+            dispatch(addItemToCart(p)).then(() => {
+                history.push("/cart");
             });
         }
     }

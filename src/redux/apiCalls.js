@@ -15,6 +15,17 @@ export const login = (user) => async (dispatch) => {
     }
 };
 
+export const searchProduct = (name) => async dispatch => {
+    try {
+        const params = {};
+        if (name) params.name = name;
+
+        return await publicRequest.get("/products/find", { params });
+    } catch (error) {
+        handleApiError(dispatch, error, "Failed to get products by search keywords!");
+    }
+}
+
 export const register = (user) => async (dispatch) => {
     try {
         const response = await publicRequest.post("/auth/sign-up", user);

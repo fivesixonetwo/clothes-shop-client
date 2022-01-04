@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 export const BASE_URL = "http://localhost:8090/api/";
+// export const BASE_URL = "https://e-commerce-spring-boot.herokuapp.com/api/";
 
 axios.defaults.baseURL = BASE_URL;
 axios.defaults.timeout = 25000;

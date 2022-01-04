@@ -61,7 +61,6 @@ const ProductManagement = () => {
         refreshProducts();
     }, []);
 
-    console.log(products)
     const refreshProducts = () => {
         dispatch(getProducts()).then((r) => {
             setProducts(r.data);

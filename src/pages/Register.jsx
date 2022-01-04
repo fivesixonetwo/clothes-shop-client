@@ -17,7 +17,7 @@ const Container = styled.div`
 `;
 
 const Wrapper = styled.div`
-  width: 30%;
+  width: 35%;
   display: flex;
   flex-direction: column;
   padding: 20px 25px;
@@ -56,7 +56,7 @@ const Register = () => {
 
     const clickRegister = (values) => {
         dispatch(register(values));
-        form.resetFields();
+        // form.resetFields();
     }
 
     return (

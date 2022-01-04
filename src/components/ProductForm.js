@@ -29,7 +29,7 @@ const ProductForm = ({ visible, onCreate, onCancel, initialValue }) => {
     useEffect(() => {
         if (visible) {
             dispatch(getCategories()).then((r) => {
-                setCategories(r.data);
+                setCategories(r.data.filter(i => i.enabled === true));
             });
             refreshAttributes();
         }
