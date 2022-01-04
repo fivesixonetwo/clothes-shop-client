@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { addItem2Wishlist, addItemToCart, getProductDetail, getProfile, removeWishlistItem } from "../redux/apiCalls";
@@ -12,8 +12,17 @@ import SimpleImageSlider from "react-simple-image-slider";
 import { useSnackbar } from "notistack";
 import FavoriteIcon from '@mui/icons-material/Favorite';
 
+import { getBestSellers } from "../redux/apiCalls";
+import Product from "../components/Product";
+
 const { Text } = Typography;
 const { Option } = Select;
+
+const ProductContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+`;
 
 const Container = styled.div`
   display: flex;
@@ -101,6 +110,8 @@ const ProductDetails = () => {
     const dispatch = useDispatch();
     const { enqueueSnackbar } = useSnackbar();
 
+    const [bestSellers, setBestSellers] = useState([]);
+
     const [product, setProduct] = useState({});
     const [images, setImages] = useState([]);
     const [quantity, setQuantity] = useState(1);
@@ -111,18 +122,36 @@ const ProductDetails = () => {
     const history = useHistory();
 
     useEffect(() => {
+        dispatch(getBestSellers()).then((res) => {
+            setBestSellers((res && res.data) || []);
+        });
+    }, [dispatch]);
+
+    useEffect(() => {
+        setImages([]);
         dispatch(getProductDetail(id)).then((res) => {
             if (res) {
                 setProduct(res.data);
             }
         });
-    }, []);
+    }, [id, dispatch]);
 
     useEffect(() => {
         if (product.variants) {
             setSelectedVariant(product.variants[0]);
         }
     }, [product]);
+
+    const getAllProductImages = useCallback(() => {
+        let result = [];
+        const baseUrl = BASE_URL + "products/images/";
+        if (product.images && product.images.length) {
+            product.images.forEach((item) => {
+                result.push({ url: baseUrl + item.url });
+            });
+        }
+        return result;
+    }, [product.images])
 
     useEffect(() => {
         const baseUrl = BASE_URL + "products/images/";
@@ -132,24 +161,15 @@ const ProductDetails = () => {
             });
             setImages(result.concat(getAllProductImages()));
         }
-    }, [selectedVariant]);
+    }, [selectedVariant, getAllProductImages]);
 
     useEffect(() => {
         if (product.images) {
             setImages(getAllProductImages());
         }
-    }, [product.images]);
+    }, [product.images, getAllProductImages]);
 
-    const getAllProductImages = () => {
-        let result = [];
-        const baseUrl = BASE_URL + "products/images/";
-        if (product.images && product.images.length) {
-            product.images.forEach((item) => {
-                result.push({ url: baseUrl + item.url });
-            });
-        }
-        return result;
-    }
+
 
     useEffect(() => {
         if (currentUser) {
@@ -219,84 +239,94 @@ const ProductDetails = () => {
         }
     }
 
-    return (<Container>
-        <Content>
-            <ProductWrapper>
-                <ProductImages>
-                    {images.length > 0 && <SimpleImageSlider
-                        width={450}
-                        height={450}
-                        images={images}
-                        startIndex={0}
-                        showBullets={true}
-                        showNavs={true} />}
-                </ProductImages>
-                <ProductInfo>
-                    <h2>{product.name}</h2>
-                    <Text style={{ color: "#ee4d2d", fontSize: 18 }} strong>${selectedVariant.price}</Text>
-                    <TierWrapper>
-                        <div><Text type="secondary">Variant</Text></div>
-                        <Select onChange={onVariantChange} value={selectedVariant.id || -1}
-                            style={{ minWidth: 250, marginLeft: 20 }}>
-                            {[].concat(product.variants || []).map((option) => {
-                                return (<Option key={option.id} value={option.id}>
-                                    {option['variantString']}
-                                </Option>)
-                            })}
-                        </Select>
-                    </TierWrapper>
-                    <QuantityInput>
-                        <div><Text type="secondary" style={{ width: 80 }}>Quantity</Text> <Text
-                            type="danger" style={{ marginLeft: 10 }}>{selectedVariant.stock} items available</Text></div>
-                        <div>
-                            <InputNumber onChange={onQuantityChange} min={1} max={selectedVariant['stock']}
-                                defaultValue={quantity} />
-                            <Button disabled={selectedVariant['stock'] === 0} onClick={onClickAdd2Cart} size={"middle"}
-                                type="primary"
-                                icon={<ShoppingCartOutlined />}>
-                                Add to Cart
-                            </Button>
-                            <Button disabled={selectedVariant['stock'] === 0} onClick={onClickBuyNow} type="primary"
-                                danger>Buy Now</Button>
-                            <Tooltip title={"Add to Wishlist"}>
-                                {
-                                    profile
-                                        ?
-                                        <>
-                                            {
-                                                profile.wishlist.find(i => i.product.id === +id)
-                                                    ? <FavoriteIcon cursor="pointer" sytle={{ cursor: 'pointer' }} color='error' onClick={onConfirmDelete} />
-                                                    : <FavoriteBorderOutlined cursor="pointer" sytle={{ cursor: 'pointer' }} onClick={onClickAdd2Favorite} />
-                                            }
-                                        </>
-                                        :
-                                        <FavoriteBorderOutlined cursor="pointer" onClick={onClickAdd2Favorite} />
-                                }
-                            </Tooltip>
+    console.log(images)
+
+    return (
+        <Container>
+            <Content>
+                <ProductWrapper>
+                    <ProductImages>
+                        {images.length > 0 && <SimpleImageSlider
+                            width={450}
+                            height={450}
+                            images={images}
+                            startIndex={0}
+                            showBullets={true}
+                            showNavs={true} />}
+                    </ProductImages>
+                    <ProductInfo>
+                        <h2>{product.name}</h2>
+                        <Text style={{ color: "#ee4d2d", fontSize: 18 }} strong>${selectedVariant.price}</Text>
+                        <TierWrapper>
+                            <div><Text type="secondary">Variant</Text></div>
+                            <Select onChange={onVariantChange} value={selectedVariant.id || -1}
+                                style={{ minWidth: 250, marginLeft: 20 }}>
+                                {[].concat(product.variants || []).map((option) => {
+                                    return (<Option key={option.id} value={option.id}>
+                                        {option['variantString']}
+                                    </Option>)
+                                })}
+                            </Select>
+                        </TierWrapper>
+                        <QuantityInput>
+                            <div><Text type="secondary" style={{ width: 80 }}>Quantity</Text> <Text
+                                type="danger" style={{ marginLeft: 10 }}>{selectedVariant.stock} items available</Text></div>
+                            <div>
+                                <InputNumber onChange={onQuantityChange} min={1} max={selectedVariant['stock']}
+                                    defaultValue={quantity} />
+                                <Button disabled={selectedVariant['stock'] === 0} onClick={onClickAdd2Cart} size={"middle"}
+                                    type="primary"
+                                    icon={<ShoppingCartOutlined />}>
+                                    Add to Cart
+                                </Button>
+                                <Button disabled={selectedVariant['stock'] === 0} onClick={onClickBuyNow} type="primary"
+                                    danger>Buy Now</Button>
+                                <Tooltip title={"Add to Wishlist"}>
+                                    {
+                                        profile
+                                            ?
+                                            <>
+                                                {
+                                                    profile.wishlist.find(i => i.product.id === +id)
+                                                        ? <FavoriteIcon cursor="pointer" sytle={{ cursor: 'pointer' }} color='error' onClick={onConfirmDelete} />
+                                                        : <FavoriteBorderOutlined cursor="pointer" sytle={{ cursor: 'pointer' }} onClick={onClickAdd2Favorite} />
+                                                }
+                                            </>
+                                            :
+                                            <FavoriteBorderOutlined cursor="pointer" onClick={onClickAdd2Favorite} />
+                                    }
+                                </Tooltip>
+                            </div>
+                        </QuantityInput>
+                    </ProductInfo>
+                </ProductWrapper>
+                <div>
+                    <h3>Product Specifications:</h3>
+                    <Divider style={{ margin: 10 }} plain dashed={true} />
+                    {getReadableSpecifications(product['specifications'] || []).map((value, index) => <SpecRow
+                        key={index}>
+                        <div style={{ width: 130 }}>
+                            <Text type="secondary">{value.key}</Text>
                         </div>
-                    </QuantityInput>
-                </ProductInfo>
-            </ProductWrapper>
-            <div>
-                <h3>Product Specifications:</h3>
-                <Divider style={{ margin: 10 }} plain dashed={true} />
-                {getReadableSpecifications(product['specifications'] || []).map((value, index) => <SpecRow
-                    key={index}>
-                    <div style={{ width: 130 }}>
-                        <Text type="secondary">{value.key}</Text>
-                    </div>
-                    <div>
-                        {value.values}
-                    </div>
-                </SpecRow>)}
-            </div>
-            <div>
-                <h3>Product Description:</h3>
-                <Divider style={{ margin: 10 }} plain dashed={true} />
-                <p>{product.description}</p>
-            </div>
-        </Content>
-    </Container>);
+                        <div>
+                            {value.values}
+                        </div>
+                    </SpecRow>)}
+                </div>
+                <div>
+                    <h3>Product Description:</h3>
+                    <Divider style={{ margin: 10 }} plain dashed={true} />
+                    <p>{product.description}</p>
+                </div>
+                <div>
+                    <h3>Product Recommend</h3>
+                    <Divider style={{ margin: 10 }} plain dashed={true} />
+                    <ProductContainer>
+                        {bestSellers.map((item) => <Product item={item} key={item.id} />)}
+                    </ProductContainer>
+                </div>
+            </Content>
+        </Container>);
 };
 
 export default ProductDetails;

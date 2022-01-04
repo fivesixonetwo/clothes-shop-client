@@ -1,17 +1,17 @@
 import styled from "styled-components";
-import {Button, Divider, Image, Space, Table, Typography} from "antd";
-import {useDispatch, useSelector} from "react-redux";
-import {BASE_URL} from "../helpers/axiosInstance";
-import {useHistory} from "react-router-dom";
-import {useEffect, useState} from "react";
-import {getShippingAddress, placeOrder} from "../redux/apiCalls";
+import { Button, Divider, Image, Space, Table, Typography } from "antd";
+import { useDispatch, useSelector } from "react-redux";
+import { BASE_URL } from "../helpers/axiosInstance";
+import { useHistory } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getShippingAddress, placeOrder } from "../redux/apiCalls";
 import RoomIcon from '@mui/icons-material/Room';
 import AddressSelectionDialog from "../components/AddressSelectionDialog";
 import TextArea from "antd/lib/input/TextArea";
-import {useSnackbar} from "notistack";
-import {resetCart} from "../redux/cartRedux";
+import { useSnackbar } from "notistack";
+import { resetCart } from "../redux/cartRedux";
 
-const {Text} = Typography;
+const { Text } = Typography;
 
 const Container = styled.div`
   flex: 1;
@@ -127,10 +127,11 @@ const Detail = styled.div`
 const Checkout = () => {
     const history = useHistory();
     const dispatch = useDispatch();
-    const {enqueueSnackbar} = useSnackbar();
+    const { enqueueSnackbar } = useSnackbar();
 
-    const {items} = useSelector((state) => state.cart);
+    const { items } = useSelector((state) => state.cart);
     const [address, setAddress] = useState([]);
+    const [name, setName] = useState('');
     const [selectedAddress, setSelectedAddress] = useState(null);
     const [addressSelectionVisible, setAddressSelectionVisible] = useState(false);
     const [message, setMessage] = useState("");
@@ -174,26 +175,26 @@ const Checkout = () => {
 
     const onClickPlaceOrder = () => {
         if (!items || !items.length) {
-            enqueueSnackbar("No items to order.", {variant: "error"});
+            enqueueSnackbar("No items to order.", { variant: "error" });
             return;
         }
         if (!selectedAddress) {
-            enqueueSnackbar("Please choose shipping address.", {variant: "error"});
+            enqueueSnackbar("Please choose shipping address.", { variant: "error" });
             return;
         }
 
         let orderItems = [];
         items.forEach((item) => {
             if (!item.selectedVariant) {
-                enqueueSnackbar(`Item ${item.name} doesn't has any variant`, {variant: "error"});
+                enqueueSnackbar(`Item ${item.name} doesn't has any variant`, { variant: "error" });
                 return;
             }
             if (item.quantity > 0) {
-                orderItems.push({productId: item.id, variantId: item.selectedVariant.id, quantity: item.quantity || 0});
+                orderItems.push({ productId: item.id, variantId: item.selectedVariant.id, quantity: item.quantity || 0 });
             }
         })
         if (!orderItems.length) {
-            enqueueSnackbar("No items to order.", {variant: "error"});
+            enqueueSnackbar("No items to order.", { variant: "error" });
             return;
         }
 
@@ -203,10 +204,11 @@ const Checkout = () => {
             shippingFee: 0,
             orderItems
         };
+
         dispatch(placeOrder(body)).then((res) => {
             if (res) {
                 dispatch(resetCart());
-                history.replace("/checkout-success", {order: res.data});
+                history.replace("/checkout-success", { order: res.data });
             }
         });
     }
@@ -231,16 +233,16 @@ const Checkout = () => {
                         <Image
                             height={45}
                             width={45}
-                            style={{cursor: "pointer"}}
+                            style={{ cursor: "pointer" }}
                             preview={true}
                             src={BASE_URL + "products/images/" + thumbnail.url}
                         />
-                        <h4 onClick={() => onClickOnProduct(record.id)} style={{cursor: "pointer"}}>{record.name}</h4>
+                        <h4 onClick={() => onClickOnProduct(record.id)} style={{ cursor: "pointer" }}>{record.name}</h4>
                     </Space>
                 )
             }
         },
-        {title: 'Variant', dataIndex: ["selectedVariant", 'variantString'], key: 'variantString', width: 220},
+        { title: 'Variant', dataIndex: ["selectedVariant", 'variantString'], key: 'variantString', width: 220 },
         {
             title: 'Quantity',
             dataIndex: 'quantity',
@@ -264,7 +266,7 @@ const Checkout = () => {
             render: (value, record) => {
                 const total = (record['selectedVariant']['price'] * (record['quantity'] || 1));
                 return (
-                    <Text style={{color: "#ee4d2d"}} strong>${total}</Text>
+                    <Text style={{ color: "#ee4d2d" }} strong>${total}</Text>
                 )
             }
         }
@@ -277,25 +279,25 @@ const Checkout = () => {
             </PageHeader>
             <Content>
                 <AddressSelector>
-                    <div className={"Coloring"}/>
+                    <div className={"Coloring"} />
                     <div className={"Content"}>
-                        <div className={"Title"}><RoomIcon style={{color: "#ee4d2d"}}/><h3
-                            style={{color: "#ee4d2d", marginLeft: 10}}>Delivery Address</h3>
+                        <div className={"Title"}><RoomIcon style={{ color: "#ee4d2d" }} /><h3
+                            style={{ color: "#ee4d2d", marginLeft: 10 }}>Delivery Address</h3>
                         </div>
-                        <div style={{marginTop: 10, display: "flex", flexDirection: "row"}}>
+                        <div style={{ marginTop: 10, display: "flex", flexDirection: "row" }}>
                             {
                                 selectedAddress ? <AddressItem>
-                                    <div style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
+                                    <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
                                         <h4>{selectedAddress.name}</h4>
                                         {selectedAddress.default && <Mark>Default</Mark>}
                                     </div>
                                     <span><Text
                                         type="secondary"
-                                        style={{marginRight: 5}}>Address: </Text>{selectedAddress.address} - {selectedAddress.ward} - {selectedAddress.district} - {selectedAddress.city}</span>
-                                    <span><Text style={{marginRight: 5}}
-                                                type="secondary">Phone number: </Text>{selectedAddress.phoneNumber}</span>
-                                </AddressItem> : <div style={{flex: 1}}>
-                                    <Text type={"secondary"} style={{fontSize: 15}}>No shipping address, please add
+                                        style={{ marginRight: 5 }}>Address: </Text>{selectedAddress.address} - {selectedAddress.ward} - {selectedAddress.district} - {selectedAddress.city}</span>
+                                    <span><Text style={{ marginRight: 5 }}
+                                        type="secondary">Phone number: </Text>{selectedAddress.phoneNumber}</span>
+                                </AddressItem> : <div style={{ flex: 1 }}>
+                                    <Text type={"secondary"} style={{ fontSize: 15 }}>No shipping address, please add
                                         one!</Text>
                                 </div>
                             }
@@ -312,23 +314,23 @@ const Checkout = () => {
                         </div>
                     </div>
                 </AddressSelector>
-                <Table title={() => <h3 style={{color: "#ee4d2d"}}>Product Ordered</h3>} pagination={false}
-                       footer={() => {
-                           return (
-                               <Space>
-                                   <Text type="secondary">Message</Text>
-                                   <TextArea onChange={onMessageChange} allowClear={true} rows={1} style={{width: 400}}
-                                             contentEditable={false}
-                                             placeholder={"(Optional) Leave us a message"}/>
-                               </Space>
-                           )
-                       }}
-                       style={{flex: 1}} dataSource={items}
-                       columns={columns}/>
+                <Table title={() => <h3 style={{ color: "#ee4d2d" }}>Product Ordered</h3>} pagination={false}
+                    footer={() => {
+                        return (
+                            <Space>
+                                <Text type="secondary">Message</Text>
+                                <TextArea onChange={onMessageChange} allowClear={true} rows={1} style={{ width: 400 }}
+                                    contentEditable={false}
+                                    placeholder={"(Optional) Leave us a message"} />
+                            </Space>
+                        )
+                    }}
+                    style={{ flex: 1 }} dataSource={items}
+                    columns={columns} />
                 <SummaryContainer>
                     <Summary>
-                        <h4 style={{texAlign: "center"}}>YOUR ORDER</h4>
-                        <Divider style={{marginTop: 12, marginBottom: 15}}/>
+                        <h4 style={{ texAlign: "center" }}>YOUR ORDER</h4>
+                        <Divider style={{ marginTop: 12, marginBottom: 15 }} />
                         <Detail>
                             <Text className={"Label"}>Subtotal:</Text>
                             <Text
@@ -341,10 +343,10 @@ const Checkout = () => {
                         <Detail>
                             <Text strong className={"Label"}>Total
                                 ({items.length} {items.length > 1 ? "items" : "item"}):</Text>
-                            <Text style={{color: "#ee4d2d"}} strong
-                                  className={"Value"}>${items.reduce((sum, item) => sum + item.selectedVariant['price'] * item.quantity, 0)}</Text>
+                            <Text style={{ color: "#ee4d2d" }} strong
+                                className={"Value"}>${items.reduce((sum, item) => sum + item.selectedVariant['price'] * item.quantity, 0)}</Text>
                         </Detail>
-                        <div style={{justifyContent: "flex-end", display: "flex", marginTop: 30}}>
+                        <div style={{ justifyContent: "flex-end", display: "flex", marginTop: 30 }}>
                             <Button
                                 onClick={onClickPlaceOrder}
                                 disabled={!items.length}
@@ -360,10 +362,10 @@ const Checkout = () => {
                 </SummaryContainer>
             </Content>
             <AddressSelectionDialog selected={selectedAddress}
-                                    address={address}
-                                    onOk={onShippingAddressChange}
-                                    visible={addressSelectionVisible}
-                                    onCancel={() => setAddressSelectionVisible(false)}/>
+                address={address}
+                onOk={onShippingAddressChange}
+                visible={addressSelectionVisible}
+                onCancel={() => setAddressSelectionVisible(false)} />
         </Container>
     );
 };

@@ -36,8 +36,3 @@ p {
 .edit-icon {
   margin-right: 8px;
 }
-
-.ant-btn:focus {
-  color: rgba(0, 0, 0, 0.85) !important;
-  border: 1px solid #d9d9d9 !important;
-}

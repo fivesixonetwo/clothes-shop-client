@@ -74,6 +74,10 @@ const Center = styled.div`
     align-items: center;
     justify-content: center;
   }
+  .btn-ant-search:focus {
+    color: rgba(0, 0, 0, 0.85) !important;
+    border: 1px solid #d9d9d9 !important;
+  }
 `;
 
 const Logo = styled.h1`
@@ -180,10 +184,16 @@ const Navbar = () => {
             placeholder="Nhập tên sản phẩm...."
             allowClear
             value={search}
+            onPressEnter={handleSearch}
             onChange={(e) => setSearch(e.target.value)}
             style={searchStyle}
           />
-          <Button icon={<SearchOutlined />} onClick={handleSearch} size="large">
+          <Button
+            icon={<SearchOutlined />}
+            className="btn-ant-search"
+            onClick={handleSearch}
+            size="large"
+          >
             Search
           </Button>
         </div>

@@ -105,7 +105,7 @@ const Ordered = () => {
                 <AddressItem>
                     <span style={{ display: "flex" }}><Text
                         type="secondary"
-                        style={{ marginRight: 5 }}>Shipping Address: </Text><h4>{record.name}</h4></span>
+                        style={{ marginRight: 5 }}>Name: </Text><h4>{record.name}</h4></span>
                     <span><Text
                         type="secondary"
                         style={{ marginRight: 5 }}>Address: </Text>{record.address} - {record.ward} - {record.district} - {record.city}</span>

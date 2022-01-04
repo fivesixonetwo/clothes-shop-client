@@ -1,9 +1,9 @@
 import styled from "styled-components";
-import {useEffect, useState} from "react";
-import {useDispatch} from "react-redux";
-import {addShippingAddress, deleteShippingAddress, getShippingAddress, updateShippingAddress} from "../redux/apiCalls";
-import {Button, List, Popconfirm, Typography} from "antd";
-import {PlusOutlined} from "@ant-design/icons";
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { addShippingAddress, deleteShippingAddress, getShippingAddress, updateShippingAddress } from "../redux/apiCalls";
+import { Button, List, Popconfirm, Typography } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 import ShippingAddressForm from "./ShippingAddressForm";
 
 
@@ -42,7 +42,7 @@ const Mark = styled.div`
   border-radius: 4px;
 `;
 
-const {Text} = Typography;
+const { Text } = Typography;
 
 const ShippingAddress = () => {
     const dispatch = useDispatch();
@@ -99,7 +99,7 @@ const ShippingAddress = () => {
 
     return (
         <Container>
-            <Button onClick={onClickAddNew} icon={<PlusOutlined/>} type="primary" block>
+            <Button onClick={onClickAddNew} icon={<PlusOutlined />} type="primary" block>
                 Add new
             </Button>
             <List
@@ -108,13 +108,13 @@ const ShippingAddress = () => {
                 renderItem={item => (
                     <AddressItemContainer>
                         <AddressItem>
-                            <div style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
+                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
                                 <h4>{item.name}</h4>
                                 {item.default && <Mark>Default</Mark>}
                             </div>
                             <span><Text
-                                type="secondary" style={{marginRight: 5}}>Address: </Text>{item.address} - {item.ward} - {item.district} - {item.city}</span>
-                            <span><Text type="secondary" style={{marginRight: 5}}>Phone number: </Text>{item.phoneNumber}</span>
+                                type="secondary" style={{ marginRight: 5 }}>Address: </Text>{item.address} - {item.ward} - {item.district} - {item.city}</span>
+                            <span><Text type="secondary" style={{ marginRight: 5 }}>Phone number: </Text>{item.phoneNumber}</span>
 
                         </AddressItem>
                         <AddressActions>
@@ -130,7 +130,7 @@ const ShippingAddress = () => {
                                 </Button>
                             </Popconfirm>
                             <Button onClick={() => onUpdateShippingAddress(item, true)} disabled={item.default}
-                                    type="primary" size={"small"}>Set as default</Button>
+                                type="primary" size={"small"}>Set as default</Button>
                         </AddressActions>
                     </AddressItemContainer>
                 )}

@@ -111,12 +111,14 @@ const OrderManagement = () => {
                 <AddressItem key={record.id}>
                     <span style={{ display: "flex" }}><Text
                         type="secondary"
-                        style={{ marginRight: 5 }}>Shipping Address: </Text><h4>{record.name}</h4></span>
+                        style={{ marginRight: 5 }}>Name: </Text><h4>{record.name}</h4></span>
                     <span><Text
                         type="secondary"
                         style={{ marginRight: 5 }}>Address: </Text>{record.address} - {record.ward} - {record.district} - {record.city}</span>
                     <span><Text style={{ marginRight: 5 }}
                         type="secondary">Phone number: </Text>{record.phoneNumber}</span>
+                    <span><Text style={{ marginRight: 5 }}
+                        type="secondary">User email: </Text>{record.email}</span>
                 </AddressItem>
                 <Table rowKey={record.id} locale={{ emptyText: "No Items" }} size={"small"}
                     columns={orderItemColumns} pagination={false} dataSource={record.orderItems} />
