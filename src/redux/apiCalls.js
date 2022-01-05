@@ -229,6 +229,14 @@ export const getBestSellers = () => async (dispatch) => {
     }
 }
 
+export const getProductsRecommend = (id) => async (dispatch) => {
+    try {
+        return await publicRequest.get(`/products/recommend?id=${id}`);
+    } catch (error) {
+        handleApiError(dispatch, error, "Failed to get products recommend!");
+    }
+}
+
 export const filterProduct = (categories) => async (dispatch) => {
     try {
         const params = {};

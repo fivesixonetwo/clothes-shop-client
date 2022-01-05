@@ -12,7 +12,7 @@ import SimpleImageSlider from "react-simple-image-slider";
 import { useSnackbar } from "notistack";
 import FavoriteIcon from '@mui/icons-material/Favorite';
 
-import { getBestSellers } from "../redux/apiCalls";
+import { getProductsRecommend } from "../redux/apiCalls";
 import Product from "../components/Product";
 
 const { Text } = Typography;
@@ -110,7 +110,7 @@ const ProductDetails = () => {
     const dispatch = useDispatch();
     const { enqueueSnackbar } = useSnackbar();
 
-    const [bestSellers, setBestSellers] = useState([]);
+    const [recommend, setRecommend] = useState([]);
 
     const [product, setProduct] = useState({});
     const [images, setImages] = useState([]);
@@ -122,10 +122,10 @@ const ProductDetails = () => {
     const history = useHistory();
 
     useEffect(() => {
-        dispatch(getBestSellers()).then((res) => {
-            setBestSellers((res && res.data) || []);
+        dispatch(getProductsRecommend(id)).then((res) => {
+            setRecommend((res && res.data) || []);
         });
-    }, [dispatch]);
+    }, [dispatch, id]);
 
     useEffect(() => {
         setImages([]);
@@ -239,8 +239,6 @@ const ProductDetails = () => {
         }
     }
 
-    console.log(images)
-
     return (
         <Container>
             <Content>
@@ -257,17 +255,22 @@ const ProductDetails = () => {
                     <ProductInfo>
                         <h2>{product.name}</h2>
                         <Text style={{ color: "#ee4d2d", fontSize: 18 }} strong>${selectedVariant.price}</Text>
-                        <TierWrapper>
-                            <div><Text type="secondary">Variant</Text></div>
-                            <Select onChange={onVariantChange} value={selectedVariant.id || -1}
-                                style={{ minWidth: 250, marginLeft: 20 }}>
-                                {[].concat(product.variants || []).map((option) => {
-                                    return (<Option key={option.id} value={option.id}>
-                                        {option['variantString']}
-                                    </Option>)
-                                })}
-                            </Select>
-                        </TierWrapper>
+                        {
+                            product?.variants?.filter(variant => variant['variantString'] !== '').length > 0 &&
+                            <TierWrapper>
+                                <div><Text type="secondary">Variant</Text></div>
+                                <Select onChange={onVariantChange} value={selectedVariant.id || -1}
+                                    style={{ minWidth: 250, marginLeft: 20 }}>
+                                    {[].concat(product.variants || []).map((option) => {
+                                        return (<Option key={option.id} value={option.id}>
+                                            {option['variantString']}
+                                        </Option>)
+                                    })}
+                                </Select>
+                            </TierWrapper>
+
+                        }
+
                         <QuantityInput>
                             <div><Text type="secondary" style={{ width: 80 }}>Quantity</Text> <Text
                                 type="danger" style={{ marginLeft: 10 }}>{selectedVariant.stock} items available</Text></div>
@@ -318,13 +321,16 @@ const ProductDetails = () => {
                     <Divider style={{ margin: 10 }} plain dashed={true} />
                     <p>{product.description}</p>
                 </div>
-                <div>
-                    <h3>Product Recommend</h3>
-                    <Divider style={{ margin: 10 }} plain dashed={true} />
-                    <ProductContainer>
-                        {bestSellers.map((item) => <Product item={item} key={item.id} />)}
-                    </ProductContainer>
-                </div>
+                {
+                    recommend.length > 0 &&
+                    <div>
+                        <h3>Product Recommend</h3>
+                        <Divider style={{ margin: 10 }} plain dashed={true} />
+                        <ProductContainer>
+                            {recommend.map((item) => <Product item={item} key={item.id} />)}
+                        </ProductContainer>
+                    </div>
+                }
             </Content>
         </Container>);
 };

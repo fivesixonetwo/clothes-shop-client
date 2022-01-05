@@ -22,6 +22,7 @@ import ProductDetails from "./pages/ProductDetails";
 import Checkout from "./pages/Checkout";
 import SuccessCheckout from "./pages/SuccessCheckout";
 import FilterProducts from "./pages/FilterProducts";
+import ScrollToTop from './helpers/ScrollToTop';
 
 const Container = styled.div`
   width: 100%;
@@ -54,6 +55,7 @@ function App() {
                 anchorOrigin={{ vertical: "top", horizontal: "center" }}>
                 <Container>
                     <Navbar />
+                    <ScrollToTop />
                     <Switch>
                         <Route exact path="/" component={Home} />
                         <Route exact path={"/cart"} component={Cart} />

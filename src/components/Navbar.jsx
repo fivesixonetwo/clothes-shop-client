@@ -241,21 +241,23 @@ const Navbar = () => {
           </Tooltip>
         </StyledLink>
         <MenuItem hidden={!currentUser} title={"Profile"} key={"1"}>
-          <span
-            style={{
-              marginRight: 5,
-              fontSize: 14,
-              fontWeight: "500",
-            }}
-          >
-            Welcome, {(profile && profile.name) || "Yamee"}
-          </span>
           <Dropdown trigger={["click"]} overlay={menu} placement="bottomLeft">
-            <Avatar
-              size={30}
-              style={{ backgroundColor: "#87d068" }}
-              icon={<UserOutlined />}
-            />
+            <div>
+              <span
+                style={{
+                  marginRight: 5,
+                  fontSize: 14,
+                  fontWeight: "500",
+                }}
+              >
+                Welcome, {(profile && profile.name) || "Yamee"}
+              </span>
+              <Avatar
+                size={30}
+                style={{ backgroundColor: "#87d068" }}
+                icon={<UserOutlined />}
+              />
+            </div>
           </Dropdown>
         </MenuItem>
       </Right>
