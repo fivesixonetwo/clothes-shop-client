@@ -295,7 +295,8 @@ const ProductManagement = () => {
         return (
             <Space key={record.id} style={{ display: "flex", flex: 1 }} direction={"vertical"} size={"middle"}>
                 <div>
-                    <span><Text type="secondary">Descriptions: </Text>{record.description}</span>
+                    <h4>Descriptions:</h4>
+                    <div dangerouslySetInnerHTML={{ __html: record.description }}></div>
                 </div>
                 <div>
                     <List

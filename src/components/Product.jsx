@@ -34,6 +34,14 @@ const CustomCard = styled(Card)`
     border-color: transparent;
     box-shadow: 5px 8px 24px 5px rgba(121, 123, 129, 0.6);
   }
+  .ant-card-meta-title {
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
 `;
 
 const Icon = styled.div`
