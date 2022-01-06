@@ -319,7 +319,7 @@ const ProductDetails = () => {
                 <div>
                     <h3>Product Description:</h3>
                     <Divider style={{ margin: 10 }} plain dashed={true} />
-                    <p>{product.description}</p>
+                    <div dangerouslySetInnerHTML={{ __html: product.description }}></div>
                 </div>
                 {
                     recommend.length > 0 &&

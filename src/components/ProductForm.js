@@ -7,6 +7,10 @@ import { MinusCircleOutlined, PlusOutlined, EditOutlined } from '@ant-design/ico
 import { addError } from "../redux/alertRedux";
 import { BASE_URL } from "../helpers/axiosInstance";
 
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+
+
 
 const { Option } = Select;
 
@@ -25,6 +29,9 @@ const ProductForm = ({ visible, onCreate, onCancel, initialValue }) => {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editAttribute, setEditAttribute] = useState({});
     const [toggleAttribute, setToggleAttribute] = useState(true);
+
+    //Text editor
+    const [value, setValue] = useState('');
 
     useEffect(() => {
         if (visible) {
@@ -230,7 +237,8 @@ const ProductForm = ({ visible, onCreate, onCancel, initialValue }) => {
                         initialValue={initialValue ? initialValue.description : ""}
                         label="Description"
                     >
-                        <TextArea placeholder={"description"} />
+                        {/* <TextArea placeholder={"description"} /> */}
+                        <ReactQuill theme="snow" value={value} onChange={setValue} />
                     </Form.Item>
                     <Form.Item label={"Specifications"}>
                         <Form.List name="specifications"
