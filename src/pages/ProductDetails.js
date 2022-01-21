@@ -304,7 +304,7 @@ const ProductDetails = () => {
                     </ProductInfo>
                 </ProductWrapper>
                 <div>
-                    <h3>Product Specifications:</h3>
+                    <h3>Product information:</h3>
                     <Divider style={{ margin: 10 }} plain dashed={true} />
                     {getReadableSpecifications(product['specifications'] || []).map((value, index) => <SpecRow
                         key={index}>
@@ -317,14 +317,14 @@ const ProductDetails = () => {
                     </SpecRow>)}
                 </div>
                 <div>
-                    <h3>Product Description:</h3>
+                    <h3>Product description:</h3>
                     <Divider style={{ margin: 10 }} plain dashed={true} />
                     <div dangerouslySetInnerHTML={{ __html: product.description }}></div>
                 </div>
                 {
                     recommend.length > 0 &&
                     <div>
-                        <h3>Product Recommend</h3>
+                        <h3>Products related to this item</h3>
                         <Divider style={{ margin: 10 }} plain dashed={true} />
                         <ProductContainer>
                             {recommend.map((item) => <Product item={item} key={item.id} />)}
